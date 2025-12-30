@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import './App.css'
-import QaitLandingPage from './Homepage/Homepage.jsx'
+import QaitLandingPage from './homepage/homepage.jsx'
 
 function App() {
   return (

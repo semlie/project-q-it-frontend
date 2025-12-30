@@ -1,7 +1,248 @@
-/* הגדרות כלליות */
+* {
+  box-sizing: border-box;
+}
+
+.container {
+  width: 100vw;
+  height: 100vh;
+  margin: 0;
+  padding: 0;
+  background: linear-gradient(135deg, #f9fafb 0%, #e5e7eb 100%);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  overflow: auto;
+  direction: rtl;
+}
+
+/* Header Styles */
+.header {
+  background-color: white;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.header-content {
+  padding: 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.logo-section {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.logo-circle {
+  width: 48px;
+  height: 48px;
+  background: linear-gradient(135deg, #22d3ee 0%, #3b82f6 100%);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.logo-text {
+  color: white;
+  font-weight: bold;
+  font-size: 20px;
+}
+
+.logo-title {
+  font-weight: bold;
+  font-size: 20px;
+  color: #1f2937;
+}
+
+.logo-subtitle {
+  font-size: 12px;
+  color: #6b7280;
+}
+
+/* Header Buttons */
+.header-buttons {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+}
+
+.dropdown-button {
+  color: #4b5563;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 16px;
+  padding: 8px 12px;
+  transition: color 0.2s;
+}
+
+.dropdown-button:hover {
+  color: #1f2937;
+}
+
+.login-button {
+  background: linear-gradient(90deg, #06b6d4 0%, #14b8a6 100%);
+  color: white;
+  padding: 10px 24px;
+  border-radius: 9999px;
+  border: none;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: 500;
+  transition: box-shadow 0.3s;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.login-button:hover {
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+}
+
+/* Main Content */
+.main {
+  padding: 80px 16px;
+}
+
+/* Hero Section */
+.hero {
+  text-align: center;
+  margin-bottom: 64px;
+}
+
+.main-title {
+  font-size: 48px;
+  font-weight: bold;
+  color: #1f2937;
+  margin-bottom: 24px;
+  line-height: 1.2;
+}
+
+.subtitle {
+  font-size: 20px;
+  color: #4b5563;
+  margin-bottom: 16px;
+}
+
+.description {
+  font-size: 18px;
+  color: #6b7280;
+  margin-bottom: 32px;
+}
+
+.cta-button {
+  background: linear-gradient(90deg, #06b6d4 0%, #14b8a6 100%);
+  color: white;
+  padding: 16px 32px;
+  border-radius: 9999px;
+  border: none;
+  cursor: pointer;
+  font-size: 18px;
+  font-weight: 600;
+  transition: all 0.3s;
+  box-shadow: 0 10px 25px rgba(6, 182, 212, 0.3);
+}
+
+.cta-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 30px rgba(6, 182, 212, 0.4);
+}
+
+/* Features Section */
+.features-header {
+  margin-bottom: 48px;
+  text-align: center;
+}
+
+.features-title {
+  font-size: 24px;
+  font-weight: 600;
+  color: #374151;
+}
+
+.features-container {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  gap: 32px;
+  flex-wrap: wrap;
+}
+
+.feature-card {
+  background-color: white;
+  border-radius: 16px;
+  padding: 32px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+  text-align: center;
+  transition: box-shadow 0.3s;
+  min-width: 280px;
+  max-width: 320px;
+}
+
+.feature-card:hover {
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+}
+
+.icon-circle {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 24px;
+}
+
+.icon-circle-green {
+  background: linear-gradient(135deg, #4ade80 0%, #22c55e 100%);
+}
+
+.icon-circle-yellow {
+  background: linear-gradient(135deg, #fbbf24 0%, #eab308 100%);
+}
+
+.icon-circle-red {
+  background: linear-gradient(135deg, #f87171 0%, #ef4444 100%);
+}
+
+.icon {
+  width: 40px;
+  height: 40px;
+  color: white;
+}
+
+.feature-title {
+  font-size: 20px;
+  font-weight: bold;
+  color: #1f2937;
+  margin-bottom: 8px;
+}
+
+.feature-text {
+  color: #4b5563;
+  font-size: 16px;
+}
+
+.feature-subtext {
+  color: #6b7280;
+  font-size: 14px;
+  margin-top: 4px;
+}
+
+.logo-image {
+  height: 100px;
+  margin-bottom: 4px;
+}
+
+.hero-image {
+  width: 100%;
+  max-width: 600px;
+  margin-bottom: 40px;
+  border-radius: 16px;
+}
+
+/* הגדרות כלליות קודמות */
 body {
   margin: 0;
-  background-color: #1a1a1a; /* צבע רקע כהה מהסקיצה */
+  background-color: transparent;
 }
 
 /* עיצוב שדות קלט */
