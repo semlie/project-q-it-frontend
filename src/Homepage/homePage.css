@@ -1,0 +1,30 @@
+/* הגדרות כלליות */
+body {
+  margin: 0;
+  background-color: #1a1a1a; /* צבע רקע כהה מהסקיצה */
+}
+
+/* עיצוב שדות קלט */
+input::placeholder {
+  color: #4b5563;
+  opacity: 0.7;
+}
+
+/* עיצוב הבאנר הכחול התחתון */
+.footer-banner {
+  background-color: #005c8a; /* הכחול העמוק מהסקיצה */
+  color: white;
+  padding: 30px;
+  text-align: center;
+  margin-top: 50px;
+}
+
+/* כפתור הטורקיז המרכזי */
+.btn-primary {
+  background-color: #2AB8A3; /* צבע הטורקיז מהלוגו */
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: bold;
+}
