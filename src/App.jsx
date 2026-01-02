@@ -1,11 +1,9 @@
-import { useState } from 'react'
 import './App.css'
-import QaitLandingPage from './homePage/homePage.jsx'
-
+import Routes from './routes/router.tsx'
 function App() {
   return (
     <>
-    <QaitLandingPage />
+    <Routes />
     </>
   )
 }

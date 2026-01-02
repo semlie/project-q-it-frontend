@@ -1,9 +1,11 @@
 import React from 'react';
-import { FileText, Sparkles, GraduationCap } from 'lucide-react';
+import { FileText, Sparkles, GraduationCap, Link } from 'lucide-react';
 import logoImage from '../assets/images/logo_q-it-rb.png';
 import './homepage.css';
+import { useNavigate } from 'react-router';
 
 export default function QaitLandingPage() {
+   const navigate = useNavigate();
   return (
     <div className="container">
       {/* Header */}
@@ -19,7 +21,7 @@ export default function QaitLandingPage() {
             <button className="dropdown-button">
               מוצרים נוספים ▼
             </button>
-            <button className="login-button">
+            <button className="login-button" onClick={() => navigate('/login')}>
               התחברות ל־Q-it
             </button>
           </div>
