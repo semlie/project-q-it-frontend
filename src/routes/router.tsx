@@ -3,6 +3,7 @@ import NotFoundPage from '../404/404';
 import QaitLoginPage from '../login/login';
 import { Paths } from './paths.tsx';
 import QaitLandingPage from '../homePage/homePage';
+import QaitRegisterPage from '../register/register.tsx';
 
 
 const Routes = () => {
@@ -21,6 +22,10 @@ const Routes = () => {
     {
       path: Paths.login,
       element: <QaitLoginPage />,
+    },
+    {
+      path: Paths.register,
+      element: <QaitRegisterPage />,
     },
     {
       path: '*',

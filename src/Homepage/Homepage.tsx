@@ -37,7 +37,7 @@ export default function QaitLandingPage() {
           <p className="subtitle">
            המערכת החכמה שהופכת כל חומר לימודי למרתון שאלות אינטראקטיבי ב-3 רמות קושי.
           </p>
-          <button className="cta-button">
+          <button className="cta-button" onClick={() => navigate('/register')}>
            התחל עכשיו בחינם
           </button>
         </div>
