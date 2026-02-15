@@ -4,6 +4,7 @@ import QaitLoginPage from '../login/login';
 import { Paths } from './paths.tsx';
 import QaitLandingPage from '../homePage/homePage';
 import QaitRegisterPage from '../register/register.tsx';
+import QaitQuizPage from '../Qustion/qustion.tsx';
 
 
 const Routes = () => {
@@ -29,7 +30,7 @@ const Routes = () => {
     },
     {
       path: '*',
-      element: <NotFoundPage />,
+      element: <NotFoundPage/>,
     },
   ]);
 
