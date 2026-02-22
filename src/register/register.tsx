@@ -24,21 +24,19 @@ export default function QaitRegisterPage() {
   return (
     <div className="register-container">
       {/* Header */}
-      <header className="register-header">
+     {/* <header className="register-header">
         <div className="register-header-content">
           <img 
             src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 80'%3E%3Ctext x='10' y='50' font-size='24' fill='%2306b6d4' font-weight='bold'%3EQ-it%3C/text%3E%3Ctext x='10' y='70' font-size='12' fill='%2306b6d4'%3EUNI-HIT%3C/text%3E%3C/svg%3E"
             alt="Q-it Logo" 
             className="register-logo"
           />
-          
           <div className="register-nav">
             <button className="register-nav-button">כניסה למערכת</button>
             <button className="register-nav-button register-nav-button-active">הרשמה</button>
           </div>
         </div>
-      </header>
-
+      </header> */}
       <div className="register-main-content">
         {/* Left Side */}
         <div className="register-left-side">
