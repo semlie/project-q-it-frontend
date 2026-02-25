@@ -15,7 +15,7 @@ export default function QaitLoginPage() {
   return (
     <div className="login-container">
       {/* Header */}
-      <header className="login-header">
+     {/*  <header className="login-header">
         <div className="login-header-content">
           <img 
             src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 80'%3E%3Ctext x='10' y='50' font-size='24' fill='%2306b6d4' font-weight='bold'%3EQ-it%3C/text%3E%3Ctext x='10' y='70' font-size='12' fill='%2306b6d4'%3EUNI-HIT%3C/text%3E%3C/svg%3E"
@@ -28,7 +28,7 @@ export default function QaitLoginPage() {
             <button className="login-nav-button login-nav-button-active">סוגדו מדיים</button>
           </div>
         </div>
-      </header>
+      </header> */}
 
       <div className="login-main-content">
         {/* Left Side - Network Background */}

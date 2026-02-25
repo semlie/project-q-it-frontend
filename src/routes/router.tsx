@@ -4,6 +4,8 @@ import QaitLoginPage from '../login/login';
 import { Paths } from './paths.tsx';
 import QaitLandingPage from '../homePage/homePage';
 import QaitRegisterPage from '../register/register.tsx';
+import QaitQuizPage from '../Qustion/qustion.tsx';
+import RegisterPage from '../register/register.tsx';
 
 
 const Routes = () => {
@@ -24,11 +26,11 @@ const Routes = () => {
     },
     {
       path: Paths.register,
-      element: <QaitRegisterPage />,
+      element: <RegisterPage />,
     },
     {
       path: '*',
-      element: <NotFoundPage />,
+      element: <NotFoundPage/>,
     },
   ]);
 
