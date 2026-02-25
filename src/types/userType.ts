@@ -1,4 +1,8 @@
 export type UserType = {
-  name: string;
-  email: string;
+  UserName: string;
+  UserEmail: string;
+  UserPassword: string;
+  Role: 'student' | 'teacher';
+  UserImageUrl?: string;
+  SchoolId: number;
 };

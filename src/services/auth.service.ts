@@ -1,8 +1,12 @@
 
 import axios from './axios';
 const url = '/api';
-export const register = async (user: { fullName: string; email: string; password: string; confirmPassword: string; school: string; grade: string | string[]; userType: 'student' | 'teacher' }) => {
-  const response = await axios.post(`${url}/Users`, user);
+export const register = async (user: any) => {
+  const response = await axios.post(`${url}/Users`, user, {
+    headers: {
+      'Content-Type': 'application/json'
+    }
+  });
   const data = response.data;
   return data;
 };

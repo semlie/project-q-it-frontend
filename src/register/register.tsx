@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { Mail, Lock, Eye, EyeOff, User, GraduationCap, BookOpen, ChevronLeft, Globe, ShieldCheck, Zap, School, Hash, ChevronDown } from 'lucide-react';
+import { Mail, Lock, Eye, EyeOff, User, GraduationCap, BookOpen, ChevronLeft, Globe, ShieldCheck, Zap, School, Hash, ChevronDown, Camera, Upload, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import './register.css';
 import logoImage from '../assets/images/icon.jpg';
@@ -15,16 +15,23 @@ export default function RegisterPage() {
   const [userType, setUserType] = useState<'student' | 'teacher'>('student');
   const [showSchoolDropdown, setShowSchoolDropdown] = useState(false);
   const [showGradeDropdown, setShowGradeDropdown] = useState(false);
+  const [profileImage, setProfileImage] = useState<File | null>(null);
+  const [profileImagePreview, setProfileImagePreview] = useState<string>('');
   const [formData, setFormData] = useState({
-    fullName: '',
-    email: '',
-    password: '',
+    UserName: '',
+    UserEmail: '',
+    UserPassword: '',
     confirmPassword: '',
-    school: '',
+    SchoolId: 0,
     grade: '' as string | string[]
   });
 
-  const schools = ['בית ספר תיכון הרצליה', 'תיכון אורט', 'תיכון אלון', 'בית ספר ריאלי', 'אחר'];
+  const schools = [
+    { id: 1, name: 'תיכון אורט' },
+    { id: 2, name: 'תיכון אלון' },
+    { id: 3, name: 'בית ספר ריאלי' },
+    { id: 4, name: 'אחר' }
+  ];
   const grades = ['ז', 'ח', 'ט', 'י', 'יא', 'יב'];
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -32,30 +39,47 @@ export default function RegisterPage() {
     let user = { ...formData, userType };
     console.log(user);
      try {
-      if(user.password !== user.confirmPassword) {
-        alert("סיסמה ואימות סיסמה אינם תואמים");
-        return;
-      }
-      if(!user.school) {
-        alert("אנא בחר בית ספר");
-        return;
-      }
-      if(!user.grade || (Array.isArray(user.grade) && user.grade.length === 0)) {
-        alert("אנא בחר כיתה");
-        return;
-      }
-      if(userType === 'teacher' && (!Array.isArray(user.grade) || user.grade.length === 0)) {
-        alert("מורים חייבים לבחור לפחות כיתה אחת");
-        return;
-      }
-      if(userType === 'student' && Array.isArray(user.grade)) {
-        alert("תלמידים יכולים לבחור רק כיתה אחת");
-        return;
-      }
+      // if(user.UserPassword != user.confirmPassword) {
+      //   alert("סיסמה ואימות סיסמה אינם תואמים");
+      //   return;
+      // }
+      // if(!user.SchoolId) {
+      //   alert("אנא בחר בית ספר");
+      //   return;
+      // }
+      // if(!user.grade || (Array.isArray(user.grade) && user.grade.length === 0)) {
+      //   alert("אנא בחר כיתה");
+      //   return;
+      // }
+      // if(userType === 'teacher' && (!Array.isArray(user.grade) || user.grade.length === 0)) {
+      //   alert("מורים חייבים לבחור לפחות כיתה אחת");
+      //   return;
+      // }
+      // if(userType === 'student' && Array.isArray(user.grade)) {
+      //   alert("תלמידים יכולים לבחור רק כיתה אחת");
+      //   return;
+      // }
       if(userType === 'student' && Array.isArray(user.grade)) {
         user.grade = user.grade[0]; // Convert to single string for students
       }
-         const adduser = await registerService(user);
+      
+      // Prepare data to send
+      const dataToSend: any = {
+        UserName: user.UserName,
+        UserEmail: user.UserEmail,
+        UserPassword: user.UserPassword,
+        confirmPassword: user.confirmPassword,
+        SchoolId: user.SchoolId,
+        grade: Array.isArray(user.grade) ? user.grade : [user.grade],
+        Role: user.userType
+      };
+      
+      // Add image as base64 if exists
+      if (profileImagePreview) {
+        dataToSend.UserImageUrl = profileImagePreview;
+      }
+      
+         const adduser = await registerService(dataToSend);
          navigate(`/${Paths.login}`);
      } catch (error) {
         console.error("Error registering user:", error);
@@ -63,6 +87,27 @@ export default function RegisterPage() {
 };
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
+  };
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (file.size > 5 * 1024 * 1024) { // 5MB limit
+        alert('תמונה חייבת להיות קטנה מ-5MB');
+        return;
+      }
+      setProfileImage(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setProfileImagePreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const removeProfileImage = () => {
+    setProfileImage(null);
+    setProfileImagePreview('');
   };
 
   const handleGradeToggle = (grade: string) => {
@@ -198,7 +243,6 @@ export default function RegisterPage() {
             <h2 className="text-4xl font-extrabold text-gray-900 tracking-tight">!הצטרפו אלינו</h2>
             <p className="text-gray-500 text-lg">צרו חשבון חדש והתחילו את המסע הלימודי שלכם</p>
           </div>
-
           {/* User Type Selector */}
           <div className="flex p-1 bg-gray-200/50 rounded-2xl gap-1">
             <button 
@@ -236,10 +280,53 @@ export default function RegisterPage() {
                   type="text"
                   placeholder="שם מלא"
                   required
-                  value={formData.fullName}
-                  onChange={(e) => handleInputChange('fullName', e.target.value)}
+                  value={formData.UserName}
+                  onChange={(e) => handleInputChange('UserName', e.target.value)}
                   className="w-full pr-12 pl-4 py-4 bg-white border border-gray-200 rounded-2xl focus:ring-2 focus:ring-cyan-500/20 focus:border-cyan-500 outline-none transition-all text-gray-900 placeholder:text-gray-400"
                 />
+              </div>
+              {/* Profile Image Upload */}
+              <div className="space-y-3">
+                <label className="block text-sm font-medium text-gray-700 text-right">
+                  תמונת פרופיל (אופציונלי)
+                </label>
+                <div className="flex items-center gap-4">
+                  {profileImagePreview ? (
+                    <div className="relative">
+                      <img 
+                        src={profileImagePreview} 
+                        alt="Profile preview" 
+                        className="w-24 h-24 rounded-full object-cover border-4 border-cyan-500 shadow-lg"
+                      />
+                      <button
+                        type="button"
+                        onClick={removeProfileImage}
+                        className="absolute -top-2 -right-2 w-8 h-8 bg-red-500 hover:bg-red-600 text-white rounded-full flex items-center justify-center shadow-lg transition-all"
+                      >
+                        <X size={16} />
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="w-24 h-24 rounded-full bg-gray-100 flex items-center justify-center border-2 border-dashed border-gray-300">
+                      <Camera size={32} className="text-gray-400" />
+                    </div>
+                  )}
+                  <label className="flex-1 cursor-pointer">
+                    <div className="w-full py-4 px-4 !bg-white border border-gray-200 rounded-2xl hover:border-cyan-500 transition-all text-gray-600 flex items-center justify-between group">
+                      <Upload size={20} className="text-gray-400 group-hover:text-cyan-500 transition-colors" />
+                      <span className="text-sm">
+                        {profileImage ? profileImage.name : 'בחר תמונה'}
+                      </span>
+                      <Camera size={20} className="text-gray-400 group-hover:text-cyan-500 transition-colors" />
+                    </div>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleImageChange}
+                      className="hidden"
+                    />
+                  </label>
+                </div>
               </div>
 
               {/* Email */}
@@ -251,8 +338,8 @@ export default function RegisterPage() {
                   type="email"
                   placeholder="כתובת אימייל"
                   required
-                  value={formData.email}
-                  onChange={(e) => handleInputChange('email', e.target.value)}
+                  value={formData.UserEmail}
+                  onChange={(e) => handleInputChange('UserEmail', e.target.value)}
                   className="w-full pr-12 pl-4 py-4 bg-white border border-gray-200 rounded-2xl focus:ring-2 focus:ring-cyan-500/20 focus:border-cyan-500 outline-none transition-all text-gray-900 placeholder:text-gray-400"
                 />
               </div>
@@ -265,8 +352,8 @@ export default function RegisterPage() {
                   className="w-full py-4 px-4 !bg-white border border-gray-200 rounded-2xl focus:ring-2 focus:ring-cyan-500/20 focus:border-cyan-500 outline-none transition-all text-gray-900 flex items-center justify-between"
                 >
                   <ChevronDown size={20} className="text-gray-400" />
-                  <span className={formData.school ? 'text-gray-900' : 'text-gray-400'}>
-                    {formData.school || 'בית ספר'}
+                  <span className={formData.SchoolId ? 'text-gray-900' : 'text-gray-400'}>
+                    {schools.find(school => school.id === formData.SchoolId)?.name || 'בית ספר'}
                   </span>
                   <School size={20} className="text-gray-400 group-focus-within:text-cyan-500 transition-colors" />
                 </button>
@@ -277,12 +364,12 @@ export default function RegisterPage() {
                         key={index}
                         type="button"
                         onClick={() => {
-                          handleInputChange('school', school);
+                          handleInputChange('SchoolId', school.id.toString());
                           setShowSchoolDropdown(false);
                         }}
                         className="w-full px-4 py-3 text-right hover:bg-cyan-50 transition-colors text-gray-900 first:rounded-t-2xl last:rounded-b-2xl"
                       >
-                        {school}
+                        {school.name}
                       </button>
                     ))}
                   </div>
@@ -345,8 +432,8 @@ export default function RegisterPage() {
                   type={showPassword ? "text" : "password"}
                   placeholder="סיסמה"
                   required
-                  value={formData.password}
-                  onChange={(e) => handleInputChange('password', e.target.value)}
+                  value={formData.UserPassword}
+                  onChange={(e) => handleInputChange('UserPassword', e.target.value)}
                   className="w-full pr-12 pl-12 py-4 bg-white border border-gray-200 rounded-2xl focus:ring-2 focus:ring-cyan-500/20 focus:border-cyan-500 outline-none transition-all text-gray-900 placeholder:text-gray-400"
                 />
                 <button
