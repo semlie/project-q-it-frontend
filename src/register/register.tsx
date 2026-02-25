@@ -5,10 +5,11 @@ import { motion, AnimatePresence } from 'motion/react';
 import './register.css';
 import logoImage from '../assets/images/icon.jpg';
 import { useNavigate } from 'react-router';
-import { register as  registerService} from '../services/auth.Service.ts';
+import { register as  registerService} from '../services/auth.service.ts';
 import { Paths } from '../routes/paths';
 import { i } from 'motion/react-client';
 export default function RegisterPage() {
+  const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [userType, setUserType] = useState<'student' | 'teacher'>('student');
@@ -26,10 +27,10 @@ export default function RegisterPage() {
   const schools = ['בית ספר תיכון הרצליה', 'תיכון אורט', 'תיכון אלון', 'בית ספר ריאלי', 'אחר'];
   const grades = ['ז', 'ח', 'ט', 'י', 'יא', 'יב'];
 
-  const handleSubmit = async () => {
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
     let user = { ...formData, userType };
     console.log(user);
-     const navigate = useNavigate();
      try {
       if(user.password !== user.confirmPassword) {
         alert("סיסמה ואימות סיסמה אינם תואמים");
