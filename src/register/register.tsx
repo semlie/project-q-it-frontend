@@ -1,7 +1,9 @@
 import React, { useState } from 'react';
 import { Mail, Lock, Eye, EyeOff, User, GraduationCap, BookOpen } from 'lucide-react';
 import './register.css';
-
+import { Paths } from '../routes/paths';
+import {register as registerService} from '../services/auth.service'
+import { useNavigate } from 'react-router';
 export default function QaitRegisterPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -12,15 +14,20 @@ export default function QaitRegisterPage() {
     password: '',
     confirmPassword: ''
   });
-
-  const handleSubmit = () => {
-    console.log('Register attempt', { ...formData, userType });
-  };
-
+  const handleSubmit = async () => {
+    let user = { ...formData, userType };
+    console.log(user);
+    const navigate = useNavigate();
+    try {
+        const adduser = await registerService(user);
+        navigate(`/${Paths.login}`);
+    } catch (error) {
+        console.error("Error registering user:", error);
+    }
+};
   const handleInputChange = (field, value) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
-
   return (
     <div className="register-container">
       {/* Header */}

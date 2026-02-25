@@ -18,7 +18,6 @@ const Routes = () => {
         },
       ],
     },
-
     {
       path: Paths.login,
       element: <QaitLoginPage />,
