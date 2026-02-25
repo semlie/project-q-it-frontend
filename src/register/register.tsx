@@ -63,26 +63,31 @@ export default function RegisterPage() {
         user.grade = user.grade[0]; // Convert to single string for students
       }
       
-      // Prepare data to send
-      const dataToSend: any = {
-        UserName: user.UserName,
-        UserEmail: user.UserEmail,
-        UserPassword: user.UserPassword,
-        confirmPassword: user.confirmPassword,
-        SchoolId: user.SchoolId,
-        grade: Array.isArray(user.grade) ? user.grade : [user.grade],
-        Role: user.userType
-      };
+      // Prepare FormData to send file
+      const formDataToSend = new FormData();
+      formDataToSend.append('UserName', user.UserName);
+      formDataToSend.append('UserEmail', user.UserEmail);
+      formDataToSend.append('UserPassword', user.UserPassword);
+      formDataToSend.append('Role', user.userType);
+      formDataToSend.append('SchoolId', user.SchoolId.toString());
       
-      // Add image as base64 if exists
-      if (profileImagePreview) {
-        dataToSend.UserImageUrl = profileImagePreview;
+      // Add image file if exists (with field name 'FileImage' as server expects)
+      if (profileImage) {
+        formDataToSend.append('FileImage', profileImage);
       }
       
-         const adduser = await registerService(dataToSend);
-         navigate(`/${Paths.login}`);
+         const adduser = await registerService(formDataToSend);
+         
+         // Success message
+         alert('🎉 ההרשמה הושלמה בהצלחה! מעביר אותך לדף ההתחברות...');
+         
+         // Navigate to login after short delay
+         setTimeout(() => {
+           navigate(`/${Paths.login}`);
+         }, 1500);
      } catch (error) {
         console.error("Error registering user:", error);
+        alert('❌ שגיאה בהרשמה. אנא נסה שנית.');
      }
 };
   const handleInputChange = (field: string, value: string) => {
@@ -136,8 +141,7 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="min-h-screen bg-white flex flex-col md:flex-row-reverse font-['Assistant',_sans-serif]" dir="rtl">
-      
+    <div className="min-h-screen bg-white flex flex-col md:flex-row font-['Assistant',_sans-serif]" dir="rtl">
       {/* Left Side (Visual/Branding) */}
       <div className="hidden md:flex md:w-1/2 bg-[#083344] relative overflow-hidden items-center justify-center p-12">
         {/* Immersive Background */}

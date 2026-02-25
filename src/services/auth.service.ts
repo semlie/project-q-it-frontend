@@ -1,12 +1,9 @@
 
 import axios from './axios';
 const url = '/api';
-export const register = async (user: any) => {
-  const response = await axios.post(`${url}/Users`, user, {
-    headers: {
-      'Content-Type': 'application/json'
-    }
-  });
+export const register = async (formData: FormData) => {
+  // Don't set Content-Type! Let axios set it automatically with boundary for multipart/form-data
+  const response = await axios.post(`${url}/Users`, formData);
   const data = response.data;
   return data;
 };
