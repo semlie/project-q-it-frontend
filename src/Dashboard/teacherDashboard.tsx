@@ -1,10 +1,15 @@
 import React, { useState } from 'react';
-import { Home, Users, FileEdit, BarChart3, Settings, LogOut, Bell, Search, Clock, CheckCircle, TrendingUp, UserCheck, BookOpen, Award } from 'lucide-react';
+import { Home, Users, FileEdit, BarChart3, Settings, Clock, CheckCircle, TrendingUp, BookOpen, Bell } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router';
 import { Paths } from '../routes/paths';
 import QaitSettings from '../Settings/settings';
 import './dashboard.css';
+import DashboardSidebar from './components/DashboardSidebar';
+import DashboardTopBar from './components/DashboardTopBar';
+import UserInfoCard from './components/UserInfoCard';
+import StatsGrid from './components/StatsGrid';
+import { DashboardStatItem, DashboardTabItem } from './components/types';
 
 export default function QaitTeacherDashboard() {
   
@@ -48,104 +53,56 @@ export default function QaitTeacherDashboard() {
     { label: "מבחנים פעילים", value: "8", icon: <FileEdit size={24} />, color: "#06b6d4" },
     { label: "ממוצע כיתות", value: "86.7", icon: <TrendingUp size={24} />, color: "#f59e0b" },
     { label: "מבחנים השבוע", value: "3", icon: <Clock size={24} />, color: "#8b5cf6" }
+  ] as DashboardStatItem[];
+
+  const navItems: DashboardTabItem[] = [
+    { id: 'home', label: 'דף הבית', icon: <Home size={20} /> },
+    { id: 'classes', label: 'הכיתות שלי', icon: <Users size={20} /> },
+    { id: 'createTest', label: 'יצירת מבחנים', icon: <FileEdit size={20} /> },
+    { id: 'stats', label: 'סטטיסטיקות כיתה', icon: <BarChart3 size={20} /> },
+    { id: 'settings', label: 'הגדרות', icon: <Settings size={20} /> },
   ];
+
+  const userInfoRows = [
+    { label: 'שם מלא', value: user?.userName || 'לא זמין' },
+    { label: 'אימייל', value: user?.userEmail || 'לא זמין' },
+    { label: 'תפקיד', value: '👨‍🏫 מורה' },
+    { label: 'מזהה משתמש', value: user?.userId || 'לא זמין' },
+    { label: 'מזהה בית ספר', value: user?.schoolId || 'לא זמין' },
+  ];
+
+  const renderComingSoon = (title: string, subtitle: string, icon: React.ReactNode, message: string) => (
+    <div>
+      <h1 className="welcome-title">{title}</h1>
+      <p className="welcome-subtitle">{subtitle}</p>
+
+      <div className="user-info-card" style={{ marginTop: '24px', textAlign: 'center', padding: '60px 20px' }}>
+        <div style={{ margin: '0 auto 20px', width: 'fit-content' }}>{icon}</div>
+        <h2 className="section-title">תכונה בפיתוח</h2>
+        <p style={{ color: '#64748b', marginTop: '12px' }}>{message}</p>
+      </div>
+    </div>
+  );
 
   return (
     <div className="dashboard-container" dir="rtl">
-      {/* Sidebar */}
-      <aside className="dashboard-sidebar">
-        <div className="sidebar-header">
-          <div className="logo-container">
-            <div className="logo-circle">Q</div>
-            <div>
-              <div className="logo-text">Q-it</div>
-              <div className="logo-subtext">UNI-HIT</div>
-            </div>
-          </div>
-        </div>
-
-        <nav className="dashboard-nav">
-          <button 
-            onClick={() => setActiveTab('home')}
-            className={`nav-item ${activeTab === 'home' ? 'active' : ''}`}
-          >
-            <Home size={20} />
-            <span>דף הבית</span>
-          </button>
-          <button 
-            onClick={() => setActiveTab('classes')}
-            className={`nav-item ${activeTab === 'classes' ? 'active' : ''}`}
-          >
-            <Users size={20} />
-            <span>הכיתות שלי</span>
-          </button>
-          <button 
-            onClick={() => setActiveTab('createTest')}
-            className={`nav-item ${activeTab === 'createTest' ? 'active' : ''}`}
-          >
-            <FileEdit size={20} />
-            <span>יצירת מבחנים</span>
-          </button>
-          <button 
-            onClick={() => setActiveTab('stats')}
-            className={`nav-item ${activeTab === 'stats' ? 'active' : ''}`}
-          >
-            <BarChart3 size={20} />
-            <span>סטטיסטיקות כיתה</span>
-          </button>
-          <button 
-            onClick={() => setActiveTab('settings')}
-            className={`nav-item ${activeTab === 'settings' ? 'active' : ''}`}
-          >
-            <Settings size={20} />
-            <span>הגדרות</span>
-          </button>
-        </nav>
-
-        <div className="sidebar-footer">
-          <button className="logout-button" onClick={handleLogout}>
-            <LogOut size={20} />
-            <span>התנתק</span>
-          </button>
-        </div>
-      </aside>
+      <DashboardSidebar
+        activeTab={activeTab}
+        navItems={navItems}
+        onChangeTab={setActiveTab}
+        onLogout={handleLogout}
+      />
 
       {/* Main Content */}
       <main className="dashboard-main">
-        {/* Top Bar */}
-        <header className="top-bar">
-          <div className="search-container">
-            <Search className="search-icon" size={20} />
-            <input 
-              type="text" 
-              placeholder="חיפוש תלמידים, כיתות, מבחנים..."
-              className="search-input"
-            />
-          </div>
-
-          <div className="top-bar-right">
-            <button className="notification-button">
-              <Bell size={20} />
-              <span className="notification-badge">5</span>
-            </button>
-
-            <div className="user-info">
-              <div className="user-details">
-                <div className="user-name">{userData.name}</div>
-                <div className="user-role">{userData.role}</div>
-              </div>
-              {user?.userImageUrl && user.userImageUrl !== 'string' ? (
-                <img 
-                  src={user.userImageUrl} 
-                  alt={user.userName}
-                  className="avatar-image"
-                />
-              ) : (
-                <div className="avatar">{userData.avatar}</div>
-              )}
-            </div>
-          </div>
-        </header>
+        <DashboardTopBar
+          searchPlaceholder="חיפוש תלמידים, כיתות, מבחנים..."
+          notificationCount={5}
+          userName={userData.name}
+          userRole={userData.role}
+          avatarText={userData.avatar}
+          userImageUrl={user?.userImageUrl}
+        />
 
         {/* Content */}
         <div className="dashboard-content">
@@ -180,94 +137,33 @@ export default function QaitTeacherDashboard() {
               </div>
             </div>
           ) : activeTab === 'createTest' ? (
-            <div>
-              <h1 className="welcome-title">יצירת מבחן חדש ✍️</h1>
-              <p className="welcome-subtitle">צור מבחנים מותאמים אישית לתלמידים שלך</p>
-              
-              <div className="user-info-card" style={{ marginTop: '24px', textAlign: 'center', padding: '60px 20px' }}>
-                <FileEdit size={64} style={{ margin: '0 auto 20px', color: '#6366f1' }} />
-                <h2 className="section-title">תכונה בפיתוח</h2>
-                <p style={{ color: '#64748b', marginTop: '12px' }}>
-                  בקרוב תוכל ליצור מבחנים חדשים, לערוך שאלות ולנהל את כל המבחנים שלך במקום אחד
-                </p>
-              </div>
-            </div>
+            renderComingSoon(
+              'יצירת מבחן חדש ✍️',
+              'צור מבחנים מותאמים אישית לתלמידים שלך',
+              <FileEdit size={64} style={{ color: '#6366f1' }} />,
+              'בקרוב תוכל ליצור מבחנים חדשים, לערוך שאלות ולנהל את כל המבחנים שלך במקום אחד'
+            )
           ) : activeTab === 'stats' ? (
-            <div>
-              <h1 className="welcome-title">סטטיסטיקות כיתה 📊</h1>
-              <p className="welcome-subtitle">עקוב אחר התקדמות וביצועים של הכיתות שלך</p>
-              
-              <div className="user-info-card" style={{ marginTop: '24px', textAlign: 'center', padding: '60px 20px' }}>
-                <BarChart3 size={64} style={{ margin: '0 auto 20px', color: '#10b981' }} />
-                <h2 className="section-title">תכונה בפיתוח</h2>
-                <p style={{ color: '#64748b', marginTop: '12px' }}>
-                  בקרוב תוכל לצפות בסטטיסטיקות מפורטות של כל כיתה, להשוות ביצועים ולזהות תלמידים הזקוקים לתמיכה
-                </p>
-              </div>
-            </div>
+            renderComingSoon(
+              'סטטיסטיקות כיתה 📊',
+              'עקוב אחר התקדמות וביצועים של הכיתות שלך',
+              <BarChart3 size={64} style={{ color: '#10b981' }} />,
+              'בקרוב תוכל לצפות בסטטיסטיקות מפורטות של כל כיתה, להשוות ביצועים ולזהות תלמידים הזקוקים לתמיכה'
+            )
           ) : (
             <>
               <h1 className="welcome-title">שלום, {userData.name}! 👋</h1>
               <p className="welcome-subtitle">סקירה מהירה של הפעילות בכיתות שלך</p>
 
-          {/* Teacher Info Card */}
-          <div className="user-info-card">
-            <div className="user-info-card-header">
-              <h2 className="section-title">פרטי מורה</h2>
-            </div>
-            <div className="user-info-content">
-              <div className="user-info-image-section">
-                {user?.userImageUrl && user.userImageUrl !== 'string' ? (
-                  <img 
-                    src={user.userImageUrl} 
-                    alt={user.userName} 
-                    className="user-profile-image"
-                  />
-                ) : (
-                  <div className="user-profile-placeholder">
-                    {userData.avatar}
-                  </div>
-                )}
-              </div>
-              <div className="user-info-details">
-                <div className="user-info-row">
-                  <div className="user-info-label">שם מלא:</div>
-                  <div className="user-info-value">{user?.userName || 'לא זמין'}</div>
-                </div>
-                <div className="user-info-row">
-                  <div className="user-info-label">אימייל:</div>
-                  <div className="user-info-value">{user?.userEmail || 'לא זמין'}</div>
-                </div>
-                <div className="user-info-row">
-                  <div className="user-info-label">תפקיד:</div>
-                  <div className="user-info-value">👨‍🏫 מורה</div>
-                </div>
-                <div className="user-info-row">
-                  <div className="user-info-label">מזהה משתמש:</div>
-                  <div className="user-info-value">{user?.userId || 'לא זמין'}</div>
-                </div>
-                <div className="user-info-row">
-                  <div className="user-info-label">מזהה בית ספר:</div>
-                  <div className="user-info-value">{user?.schoolId || 'לא זמין'}</div>
-                </div>
-              </div>
-            </div>
-          </div>
+              <UserInfoCard
+                title="פרטי מורה"
+                avatarText={userData.avatar}
+                userName={user?.userName || userData.name}
+                userImageUrl={user?.userImageUrl}
+                rows={userInfoRows}
+              />
 
-          {/* Stats Cards */}
-          <div className="stats-grid">
-            {stats.map((stat, index) => (
-              <div key={index} className="stat-card">
-                <div className="stat-icon" style={{backgroundColor: stat.color + '20', color: stat.color}}>
-                  {stat.icon}
-                </div>
-                <div className="stat-content">
-                  <div className="stat-label">{stat.label}</div>
-                  <div className="stat-value">{stat.value}</div>
-                </div>
-              </div>
-            ))}
-          </div>
+              <StatsGrid stats={stats} />
 
           {/* Two Column Layout */}
           <div className="two-column-grid">
