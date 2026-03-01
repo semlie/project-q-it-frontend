@@ -81,7 +81,7 @@ export default function RegisterPage() {
          // Success message
          alert('🎉 ההרשמה הושלמה בהצלחה! מעביר אותך לדף ההתחברות...');
          
-         // Navigate to login after short delay
+         // Navigate to login page to authenticate
          setTimeout(() => {
            navigate(`/${Paths.login}`);
          }, 1500);
@@ -175,7 +175,6 @@ export default function RegisterPage() {
               className={`absolute ${bubble.color} ${bubble.size} rounded-full blur-[2px] shadow-lg shadow-white/10`}
             />
           ))}
-
           {/* Grid Pattern */}
           <div className="absolute inset-0 opacity-[0.03]" 
                style={{ backgroundImage: 'linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px)', backgroundSize: '50px 50px' }} />

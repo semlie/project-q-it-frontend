@@ -6,3 +6,7 @@ export type UserType = {
   UserImageUrl?: string;
   SchoolId: number;
 };
+export type UserLoginType = {
+  UserEmail: string;
+  UserPassword: string;
+};

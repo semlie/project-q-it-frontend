@@ -1,40 +1,40 @@
 import { RouterProvider, createBrowserRouter } from 'react-router';
 import NotFoundPage from '../404/404';
-import QaitLoginPage from '../login/login';
 import { Paths } from './paths.tsx';
 import QaitLandingPage from '../homePage/homePage';
 import QaitRegisterPage from '../register/register.tsx';
 import QaitQuizPage from '../Qustion/qustion.tsx';
-import RegisterPage from '../register/register.tsx';
-
+import QaitDashboardPage from '../dashboard/dashboard.tsx';
+import { LoginPage } from '../login/login';
+import { ProtectedRoute } from './ProtectedRoute.tsx';
 
 const Routes = () => {
   const router = createBrowserRouter([
     {
       path: '/',
       element: <QaitLandingPage />,
-      children: [
-        {
-          path: Paths.home,
-          element: <QaitLandingPage />,
-        },
-      ],
     },
-
     {
       path: Paths.login,
-      element: <QaitLoginPage />,
+      element: <LoginPage/>,
     },
     {
       path: Paths.register,
-      element: <RegisterPage />,
+      element: <QaitRegisterPage/>,
+    },
+    {
+      path: Paths.dashboard,
+      element: (
+        <ProtectedRoute>
+          <QaitDashboardPage />
+        </ProtectedRoute>
+      ),
     },
     {
       path: '*',
       element: <NotFoundPage/>,
     },
   ]);
-
   return <RouterProvider router={router} />;
 };
 export default Routes;
