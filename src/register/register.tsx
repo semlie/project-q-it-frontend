@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { Mail, Lock, Eye, EyeOff, User, GraduationCap, BookOpen, ChevronLeft, Globe, ShieldCheck, Zap, School, Hash, ChevronDown, Camera, Upload, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import './register.css';
-import logoImage from '../assets/images/icon.jpg';
+import logoImage from '../assets/images/icon.jpg'; 
 import { useNavigate } from 'react-router';
 import { register as  registerService} from '../services/auth.service.ts';
 import { Paths } from '../routes/paths';

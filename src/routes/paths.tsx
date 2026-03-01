@@ -5,4 +5,7 @@ export const Paths = {
   dashboard: 'dashboard',
   profile: 'profile',
   settings: 'settings',
+  studentStats: 'student-stats',
+  teacherStats: 'teacher-stats',
+  CoursesList : 'courses-list',
 };

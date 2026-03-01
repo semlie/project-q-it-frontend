@@ -1,30 +1,31 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { getSession, setSession as saveSession, removeSession } from '../auth/auth.utils';
 import { loginByToken } from '../services/auth.service';
+import { UserType } from '../types/userType';
 
-interface User {
-  userId: number;
-  userName: string;
-  userEmail: string;
-  role: string;
-  schoolId: number;
-  userImageUrl?: string;
-  userPassword?: string;
-}
+// interface User {
+//   userId: number;
+//   userName: string;
+//   userEmail: string;
+//   role: string;
+//   schoolId: number;
+//   userImageUrl?: string;
+//   userPassword?: string;
+// }
 
 interface AuthContextType {
-  user: User | null;
+  user:UserType | null;
   isLoading: boolean;
   isAuthenticated: boolean;
-  login: (user: User, token: string) => void;
+  login: (user: UserType, token: string) => void;
   logout: () => void;
-  updateUser: (user: User) => void;
+  updateUser: (user: UserType) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<UserType | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   // Load user from token on mount
@@ -49,7 +50,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     loadUser();
   }, []);
-  const login = (userData: User, token: string) => {
+  const login = (userData: UserType, token: string) => {
     console.log('AuthContext login called with:', { userData, token });
     saveSession(token);
     console.log('Token saved to localStorage');
@@ -62,7 +63,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     setUser(null);
   };
 
-  const updateUser = (userData: User) => {
+  const updateUser = (userData: UserType) => {
     setUser(userData);
   };
 

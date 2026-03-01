@@ -1,6 +1,6 @@
 
 import axios from './axios';
-import { UserLoginType } from '../types/userType';
+import { UserLoginType, UserType } from '../types/userType';
 const url = '/api';
 export const register = async (formData: FormData) => {
   // Don't set Content-Type! Let axios set it automatically with boundary for multipart/form-data
@@ -10,6 +10,11 @@ export const register = async (formData: FormData) => {
 };
 export const login = async (credentials: UserLoginType) => {
   const response = await axios.post(`${url}/Login`, credentials);
+  const data = response.data;
+  return data;
+};
+export const updateUser = async (userData: UserType) => {
+  const response = await axios.put(`${url}/Users/${userData.userId}`, userData);
   const data = response.data;
   return data;
 };

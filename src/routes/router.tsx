@@ -4,7 +4,7 @@ import { Paths } from './paths.tsx';
 import QaitLandingPage from '../homePage/homePage';
 import QaitRegisterPage from '../register/register.tsx';
 import QaitQuizPage from '../Qustion/qustion.tsx';
-import QaitDashboardPage from '../dashboard/dashboard.tsx';
+import QaitDashboardPage from '../Dashboard/dashboard.tsx';
 import { LoginPage } from '../login/login';
 import { ProtectedRoute } from './ProtectedRoute.tsx';
 
