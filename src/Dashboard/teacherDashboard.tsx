@@ -24,6 +24,15 @@ export default function QaitTeacherDashboard() {
     navigate(`/${Paths.login}`);
   };
 
+  const handleChangeTab = (tabId: string) => {
+    if (tabId === 'createTest') {
+      navigate(`/${Paths.createTest}`);
+      return;
+    }
+
+    setActiveTab(tabId);
+  };
+
   const userData = {
     name: user?.userName || 'מורה',
     role: 'מורה',
@@ -89,7 +98,7 @@ export default function QaitTeacherDashboard() {
       <DashboardSidebar
         activeTab={activeTab}
         navItems={navItems}
-        onChangeTab={setActiveTab}
+        onChangeTab={handleChangeTab}
         onLogout={handleLogout}
       />
 
@@ -136,13 +145,6 @@ export default function QaitTeacherDashboard() {
                 </div>
               </div>
             </div>
-          ) : activeTab === 'createTest' ? (
-            renderComingSoon(
-              'יצירת מבחן חדש ✍️',
-              'צור מבחנים מותאמים אישית לתלמידים שלך',
-              <FileEdit size={64} style={{ color: '#6366f1' }} />,
-              'בקרוב תוכל ליצור מבחנים חדשים, לערוך שאלות ולנהל את כל המבחנים שלך במקום אחד'
-            )
           ) : activeTab === 'stats' ? (
             renderComingSoon(
               'סטטיסטיקות כיתה 📊',

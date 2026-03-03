@@ -4,6 +4,9 @@ import { Paths } from './paths.tsx';
 import QaitLandingPage from '../homePage/homePage';
 import QaitRegisterPage from '../register/register.tsx';
 import QaitDashboardPage from '../Dashboard/dashboard.tsx';
+import QaitCourseDetailsPage from '../Courses/courseDetails.tsx';
+import QaitCourseChapterPage from '../Courses/chapterView.tsx';
+import QaitCreateTest from '../createTest/createTest.tsx';
 import { LoginPage } from '../login/login';
 import { ProtectedRoute } from './ProtectedRoute.tsx';
 
@@ -26,6 +29,30 @@ const Routes = () => {
       element: (
         <ProtectedRoute>
           <QaitDashboardPage />
+        </ProtectedRoute>
+      ),
+    },
+    {
+      path: Paths.courseDetails,
+      element: (
+        <ProtectedRoute>
+          <QaitCourseDetailsPage />
+        </ProtectedRoute>
+      ),
+    },
+    {
+      path: Paths.courseChapter,
+      element: (
+        <ProtectedRoute>
+          <QaitCourseChapterPage />
+        </ProtectedRoute>
+      ),
+    },
+    {
+      path: Paths.createTest,
+      element: (
+        <ProtectedRoute>
+          <QaitCreateTest />
         </ProtectedRoute>
       ),
     },

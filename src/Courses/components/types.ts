@@ -8,7 +8,6 @@ export interface Course {
   progress: number;
   chapters: number;
   completedChapters: number;
-  nextClass: string;
   students: number;
   averageGrade: number;
   materials: number;

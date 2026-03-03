@@ -58,7 +58,6 @@ export default function QaitStudentDashboard() {
     { label: 'שם מלא', value: user?.userName || 'לא זמין' },
     { label: 'אימייל', value: user?.userEmail || 'לא זמין' },
     { label: 'תפקיד', value: '👨‍🎓 תלמיד' },
-    { label: 'מזהה משתמש', value: user?.userId || 'לא זמין' },
     { label: 'מזהה בית ספר', value: user?.schoolId || 'לא זמין' },
   ];
 

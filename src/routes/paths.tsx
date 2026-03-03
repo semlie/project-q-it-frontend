@@ -8,4 +8,7 @@ export const Paths = {
   studentStats: 'student-stats',
   teacherStats: 'teacher-stats',
   CoursesList : 'courses-list',
+  createTest: 'create-test',
+  courseDetails: 'courses/:courseId',
+  courseChapter: 'courses/:courseId/chapters/:chapterId',
 };

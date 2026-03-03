@@ -1,4 +1,6 @@
 import { BarChart3, BookOpen, Calendar, Clock, Users } from 'lucide-react';
+import { useNavigate } from 'react-router';
+import { Paths } from '../../routes/paths';
 import { Course } from './types';
 import { styles } from './styles';
 
@@ -7,6 +9,8 @@ interface CourseCardProps {
 }
 
 export default function CourseCard({ course }: CourseCardProps) {
+  const navigate = useNavigate();
+
   return (
     <div style={styles.courseCard}>
       <div style={{ ...styles.courseHeader, backgroundColor: course.color }}>
@@ -63,17 +67,16 @@ export default function CourseCard({ course }: CourseCardProps) {
             <span>{course.upcomingTest}</span>
           </div>
         )}
-
-        <div style={styles.nextClass}>
-          <Clock size={16} style={{ color: course.color }} />
-          <span>שיעור הבא: {course.nextClass}</span>
-        </div>
       </div>
 
       <div style={styles.courseFooter}>
         <button
           style={{ ...styles.enterButton, backgroundColor: course.color }}
-          onClick={() => console.log('Enter course', course.id)}
+          onClick={() =>
+            navigate(`/${Paths.courseDetails.replace(':courseId', String(course.id))}`, {
+              state: { course },
+            })
+          }
         >
           כניסה לקורס
         </button>
