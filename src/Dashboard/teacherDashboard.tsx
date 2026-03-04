@@ -66,7 +66,7 @@ export default function QaitTeacherDashboard() {
 
   const navItems: DashboardTabItem[] = [
     { id: 'home', label: 'דף הבית', icon: <Home size={20} /> },
-    { id: 'classes', label: 'הכיתות שלי', icon: <Users size={20} /> },
+    { id: 'classes', label: 'הקורסים שלי', icon: <BookOpen size={20} /> },
     { id: 'createTest', label: 'יצירת מבחנים', icon: <FileEdit size={20} /> },
     { id: 'stats', label: 'סטטיסטיקות כיתה', icon: <BarChart3 size={20} /> },
     { id: 'settings', label: 'הגדרות', icon: <Settings size={20} /> },
