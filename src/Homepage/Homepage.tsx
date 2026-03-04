@@ -1,11 +1,38 @@
 import React from 'react';
-import { FileText, Sparkles, GraduationCap, Link } from 'lucide-react';
-import logoImage from '../assets/images/logo_q-it-rb.png';
+import { FileText, Sparkles, GraduationCap } from 'lucide-react';
 import './homepage.css';
 import { useNavigate } from 'react-router';
+import FeatureCard from './components/FeatureCard';
+
+const logoImage = new URL('../assets/images/logo_q-it-rb.png', import.meta.url).href;
 
 export default function QaitLandingPage() {
    const navigate = useNavigate();
+
+  const features = [
+    {
+      id: 1,
+      title: 'המורה מעלה חומר',
+      text: '(PDF/Word)',
+      circleClassName: 'icon-circle-green',
+      icon: <FileText className="icon" />,
+    },
+    {
+      id: 2,
+      title: 'ה-AI שלנו מנתח ומייצר שאלות אמריקאיות.',
+      text: '',
+      circleClassName: 'icon-circle-yellow',
+      icon: <Sparkles className="icon" />,
+    },
+    {
+      id: 3,
+      title: 'התלמידים מתרגלים ומגיעים לשיא ההצלחה.',
+      text: '',
+      circleClassName: 'icon-circle-red',
+      icon: <GraduationCap className="icon" />,
+    },
+  ];
+
   return (
     <div className="container">
       {/* Header */}
@@ -50,44 +77,15 @@ export default function QaitLandingPage() {
         </div>
 
         <div className="features-container">
-          {/* Feature 1 */}
-          <div className="feature-card">
-            <div className="icon-circle icon-circle-green">
-              <FileText className="icon" />
-            </div>
-            <h3 className="feature-title">
-              המורה מעלה חומר
-            </h3>
-            <p className="feature-text">
-              (PDF/Word)
-            </p>
-          </div>
-
-          {/* Feature 2 */}
-          <div className="feature-card">
-            <div className="icon-circle icon-circle-yellow">
-              <Sparkles className="icon" />
-            </div>
-            <h3 className="feature-title">
-              ה-AI שלנו מנתח ומייצר שאלות אמריקאיות.
-            </h3>
-            <p className="feature-text">
-            </p>
-            <p className="feature-subtext">
-            </p>
-          </div>
-
-          {/* Feature 3 */}
-          <div className="feature-card">
-            <div className="icon-circle icon-circle-red">
-              <GraduationCap className="icon" />
-            </div>
-            <h3 className="feature-title">
-              התלמידים מתרגלים ומגיעים לשיא ההצלחה.
-            </h3>
-            <p className="feature-text">
-            </p>
-          </div>
+          {features.map((feature) => (
+            <FeatureCard
+              key={feature.id}
+              title={feature.title}
+              text={feature.text}
+              circleClassName={feature.circleClassName}
+              icon={feature.icon}
+            />
+          ))}
         </div>
       </main>
     </div>
