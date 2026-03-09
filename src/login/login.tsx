@@ -10,6 +10,7 @@ import AuthSubmitButton from '../components/auth/AuthSubmitButton';
 import LoginVisualFooterStats from './components/LoginVisualFooterStats';
 import LoginFormFields from './components/LoginFormFields';
 import LoginFormFooter from './components/LoginFormFooter';
+import { UserType } from '../types/userType';
 
 type LoginPageProps = {
   onSwitch?: () => void;
@@ -21,50 +22,46 @@ export const LoginPage = ({ onSwitch }: LoginPageProps) => {
     userEmail: '',
     userPassword: '',
   });
+  const [error, setError] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const navigate = useNavigate();
   const { login } = useAuth();
-  
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Login attempt', formData);
+    setError(null);
+    setIsSubmitting(true);
+
     try {
       const response = await loginService(formData);
-      console.log('Server response:', response);
-      
-      // Check if response is a string (token directly) or an object
+
       let token: string;
-      let user: any;
-      
+      let user: UserType;
+
       if (typeof response === 'string') {
-        // Token returned directly as string
         token = response;
-        console.log('Token received directly:', token);
       } else {
-        // Token in object
         token = response.token || response.Token;
         user = response.user || response;
       }
-      
+
       if (!token) {
-        console.error('No token in response:', response);
-        alert('❌ שגיאה: לא התקבל טוקן מהשרת');
+        setError('שגיאה: לא התקבל טוקן מהשרת');
+        setIsSubmitting(false);
         return;
       }
-      
-      // If we don't have user data, fetch it using the token
+
       if (!user || typeof response === 'string') {
-        console.log('Fetching user data with token...');
         const { loginByToken } = await import('../services/auth.service');
         user = await loginByToken(token);
-        console.log('User data fetched:', user);
       }
-      
+
       login(user, token);
-      alert('🎉 התחברת בהצלחה!');
       navigate(`/${Paths.dashboard}`);
-    } catch (error) {
-      console.error('Login failed:', error);
-      alert('❌ שגיאה בהתחברות. אנא בדוק את פרטי ההתחברות.');
+    } catch (err: any) {
+      setError(err.response?.data?.message || 'שגיאה בהתחברות. אנא בדוק את פרטי ההתחברות.');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -98,21 +95,23 @@ export const LoginPage = ({ onSwitch }: LoginPageProps) => {
         }
         footer={<LoginVisualFooterStats />}
       />
-
-      {/* Form Side */}
       <div className="flex-1 flex flex-col p-6 md:p-12 lg:p-20 justify-center items-center bg-gray-50/50">
         <div className="w-full max-w-md space-y-10">
-          
           <AuthMobileBrand
             iconContainerClassName="w-16 h-16 bg-white rounded-2xl shadow-lg flex items-center justify-center border border-gray-100"
             icon={<BookOpen size={32} className="text-cyan-600" />}
           />
-
           <div className="space-y-2 text-center md:text-right">
             <h2 className="text-4xl font-extrabold text-gray-900 tracking-tight">כיף לראות אותך שוב!</h2>
             <p className="text-gray-500 text-lg">התחבר כדי להמשיך לתרגל</p>
           </div>
-
+          
+          {error && (
+            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
+              {error}
+            </div>
+          )}
+          
           <form onSubmit={handleSubmit} className="space-y-6">
             <LoginFormFields
               showPassword={showPassword}
@@ -122,9 +121,7 @@ export const LoginPage = ({ onSwitch }: LoginPageProps) => {
               onChangeEmail={(value) => handleInputChange('userEmail', value)}
               onChangePassword={(value) => handleInputChange('userPassword', value)}
             />
-
-            <AuthSubmitButton label="התחבר" />
-
+            <AuthSubmitButton label={isSubmitting ? "מתחבר..." : "התחבר"} disabled={isSubmitting} />
             <LoginFormFooter onSwitch={onSwitch} onNavigateRegister={navigate} />
           </form>
         </div>
