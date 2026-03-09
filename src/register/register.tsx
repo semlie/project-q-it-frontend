@@ -1,9 +1,8 @@
-
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Mail, Lock, Eye, EyeOff, User, Zap } from 'lucide-react';
 import './register.css';
 import { useNavigate } from 'react-router';
-import { register as  registerService} from '../services/auth.service.ts';
+import { register as registerService } from '../services/auth.service.ts';
 import { Paths } from '../routes/paths';
 import AuthVisualPanel from '../components/auth/AuthVisualPanel';
 import GoogleAuthButton from '../components/auth/GoogleAuthButton';
@@ -16,8 +15,10 @@ import ProfileImageUpload from './components/ProfileImageUpload';
 import SchoolDropdown from './components/SchoolDropdown';
 import GradeDropdown from './components/GradeDropdown';
 import { RegisterFormData, UserType } from './components/types';
+import { getSchools, getClassesBySchoolId } from '../services/schools.service.ts';
 
 const logoImage = new URL('../assets/images/logo-q-it.png', import.meta.url).href;
+
 export default function RegisterPage() {
   const navigate = useNavigate();
   const [showPassword, setShowPassword] = useState(false);
@@ -27,53 +28,81 @@ export default function RegisterPage() {
   const [showGradeDropdown, setShowGradeDropdown] = useState(false);
   const [profileImage, setProfileImage] = useState<File | null>(null);
   const [profileImagePreview, setProfileImagePreview] = useState<string>('');
+  
+  // schools הוא עכשיו מערך של אובייקטים: { id: number, nameSchool: string }
+  const [schools, setSchools] = useState<any[]>([]);
+  const [availableClasses, setAvailableClasses] = useState<string[]>([]);
+  const [isLoadingClasses, setIsLoadingClasses] = useState(false);
+
   const [formData, setFormData] = useState<RegisterFormData>({
     UserName: '',
     UserEmail: '',
     UserPassword: '',
     confirmPassword: '',
-    SchoolId: 0,
+    SchoolId: 0, // חזר להיות מספר
     grade: '' as string | string[]
   });
 
-  const schools = [
-    { id: 1, name: 'תיכון אורט' },
-    { id: 2, name: 'תיכון אלון' },
-    { id: 3, name: 'בית ספר ריאלי' },
-    { id: 4, name: 'אחר' }
-  ];
-  const grades = ['ז', 'ח', 'ט', 'י', 'יא', 'יב'];
+  // שליפת בתי הספר (אובייקטים)
+ // בתוך RegisterPage.tsx
 
+useEffect(() => {
+  const fetchSchools = async () => {
+    try {
+      const schoolsData = await getSchools();
+      // וודא ש-schoolsData הוא אכן מערך של אובייקטים [{schoolId, nameSchool}, ...]
+      setSchools(schoolsData); 
+    } catch (error) {
+      console.error("Failed to fetch schools:", error);
+    }
+  };
+  fetchSchools();
+}, []);
+ // שליפת כיתות לפי ה-ID של בית הספר
+useEffect(() => {
+  const fetchClasses = async () => {
+    // בדיקה שבאמת נבחר ID תקין (גדול מ-0)
+    if (!formData.SchoolId || formData.SchoolId === 0) {
+      setAvailableClasses([]);
+      return;
+    }
+    setIsLoadingClasses(true);
+    try {
+      const rawClassesData = await getClassesBySchoolId(Number(formData.SchoolId));
+      console.log("Classes from server:", rawClassesData); // לבדיקה בקונסול
+      // כאן התיקון הקריטי: 
+      // השרת מחזיר className, לכן נחלץ אותו. 
+      // הוספתי הגנה למקרה שהשדה מגיע בשם אחר.
+      const formattedClasses = rawClassesData.map((item: any) => {
+        if (typeof item === 'object') {
+          return item.className || item.nameClass || "כיתה ללא שם";
+        }
+        return item;
+      });
+      setAvailableClasses(formattedClasses || []);
+    } catch (error) {
+      console.error("Failed to fetch classes:", error);
+      setAvailableClasses([]);
+    } finally {
+      setIsLoadingClasses(false);
+    }
+  };
+  fetchClasses();
+}, [formData.SchoolId]);
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (formData.UserPassword !== formData.confirmPassword) {
+        alert("הסיסמאות אינן תואמות");
+        return;
+    }
+
     let user = { ...formData, userType };
-    console.log(user);
-     try {
-      // if(user.UserPassword != user.confirmPassword) {
-      //   alert("סיסמה ואימות סיסמה אינם תואמים");
-      //   return;
-      // }
-      // if(!user.SchoolId) {
-      //   alert("אנא בחר בית ספר");
-      //   return;
-      // }
-      // if(!user.grade || (Array.isArray(user.grade) && user.grade.length === 0)) {
-      //   alert("אנא בחר כיתה");
-      //   return;
-      // }
-      // if(userType === 'teacher' && (!Array.isArray(user.grade) || user.grade.length === 0)) {
-      //   alert("מורים חייבים לבחור לפחות כיתה אחת");
-      //   return;
-      // }
-      // if(userType === 'student' && Array.isArray(user.grade)) {
-      //   alert("תלמידים יכולים לבחור רק כיתה אחת");
-      //   return;
-      // }
-      if(userType === 'student' && Array.isArray(user.grade)) {
-        user.grade = user.grade[0]; // Convert to single string for students
+    
+    try {
+      if (userType === 'student' && Array.isArray(user.grade)) {
+        user.grade = user.grade[0]; 
       }
       
-      // Prepare FormData to send file
       const formDataToSend = new FormData();
       formDataToSend.append('UserName', user.UserName);
       formDataToSend.append('UserEmail', user.UserEmail);
@@ -81,25 +110,22 @@ export default function RegisterPage() {
       formDataToSend.append('Role', user.userType);
       formDataToSend.append('SchoolId', user.SchoolId.toString());
       
-      // Add image file if exists (with field name 'FileImage' as server expects)
+      const gradeValue = Array.isArray(user.grade) ? user.grade.join(',') : user.grade;
+      formDataToSend.append('Grade', gradeValue);
+      
       if (profileImage) {
         formDataToSend.append('FileImage', profileImage);
       }
       
-         const adduser = await registerService(formDataToSend);
-         
-         // Success message
-         alert('🎉 ההרשמה הושלמה בהצלחה! מעביר אותך לדף ההתחברות...');
-         
-         // Navigate to login page to authenticate
-         setTimeout(() => {
-           navigate(`/${Paths.login}`);
-         }, 1500);
-     } catch (error) {
-        console.error("Error registering user:", error);
-        alert('❌ שגיאה בהרשמה. אנא נסה שנית.');
-     }
-};
+      await registerService(formDataToSend);
+      alert('🎉 ההרשמה הושלמה בהצלחה!');
+      navigate(`/${Paths.login}`);
+    } catch (error) {
+      console.error("Error registering user:", error);
+      alert('❌ שגיאה בהרשמה.');
+    }
+  };
+
   const handleInputChange = <K extends keyof RegisterFormData>(field: K, value: RegisterFormData[K]) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
@@ -107,15 +133,9 @@ export default function RegisterPage() {
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      if (file.size > 5 * 1024 * 1024) { // 5MB limit
-        alert('תמונה חייבת להיות קטנה מ-5MB');
-        return;
-      }
       setProfileImage(file);
       const reader = new FileReader();
-      reader.onloadend = () => {
-        setProfileImagePreview(reader.result as string);
-      };
+      reader.onloadend = () => setProfileImagePreview(reader.result as string);
       reader.readAsDataURL(file);
     }
   };
@@ -128,11 +148,9 @@ export default function RegisterPage() {
   const handleGradeToggle = (grade: string) => {
     if (userType === 'teacher') {
       setFormData(prev => {
-        const currentGrades = Array.isArray(prev.grade) ? prev.grade : prev.grade ? [prev.grade] : [];
+        const currentGrades = Array.isArray(prev.grade) ? prev.grade : [];
         const isSelected = currentGrades.includes(grade);
-        const newGrades = isSelected
-          ? currentGrades.filter(g => g !== grade)
-          : [...currentGrades, grade];
+        const newGrades = isSelected ? currentGrades.filter(g => g !== grade) : [...currentGrades, grade];
         return { ...prev, grade: newGrades };
       });
     } else {
@@ -157,8 +175,7 @@ export default function RegisterPage() {
               הצטרפו למהפכת <br />
               <span className="text-cyan-300">החינוך הדיגיטלי</span>
             </h3>
-
-            <div className="flex flex-wrap justify-center gap-3">
+            <div className="flex flex-wrap justify-center gap-3 mt-6">
               {['חדשני', 'חווייתי', 'מותאם אישית'].map((tag, index) => (
                 <span key={index} className="px-4 py-2 bg-white/5 border border-white/10 rounded-full text-white/80 text-sm font-medium backdrop-blur-sm">
                   {tag}
@@ -169,7 +186,6 @@ export default function RegisterPage() {
         }
       />
 
-      {/* Right Side (Form) */}
       <div className="flex-1 flex flex-col p-6 md:p-12 lg:p-20 justify-center items-center bg-gray-50/50">
         <div className="w-full max-w-md space-y-10">
           
@@ -182,11 +198,11 @@ export default function RegisterPage() {
             <h2 className="text-4xl font-extrabold text-gray-900 tracking-tight">!הצטרפו אלינו</h2>
             <p className="text-gray-500 text-lg">צרו חשבון חדש והתחילו את המסע הלימודי שלכם</p>
           </div>
+
           <UserTypeSelector userType={userType} onChange={setUserType} />
 
           <form onSubmit={handleSubmit} className="space-y-5">
             <div className="space-y-4">
-              {/* Full Name */}
               <div className="relative group">
                 <div className="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none text-gray-400 group-focus-within:text-cyan-500 transition-colors">
                   <User size={20} />
@@ -200,6 +216,7 @@ export default function RegisterPage() {
                   className="w-full pr-12 pl-4 py-4 bg-white border border-gray-200 rounded-2xl focus:ring-2 focus:ring-cyan-500/20 focus:border-cyan-500 outline-none transition-all text-gray-900 placeholder:text-gray-400"
                 />
               </div>
+
               <ProfileImageUpload
                 profileImage={profileImage}
                 profileImagePreview={profileImagePreview}
@@ -207,7 +224,6 @@ export default function RegisterPage() {
                 onRemove={removeProfileImage}
               />
 
-              {/* Email */}
               <div className="relative group">
                 <div className="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none text-gray-400 group-focus-within:text-cyan-500 transition-colors">
                   <Mail size={20} />
@@ -227,21 +243,31 @@ export default function RegisterPage() {
                 schoolId={formData.SchoolId}
                 isOpen={showSchoolDropdown}
                 onToggle={() => setShowSchoolDropdown(!showSchoolDropdown)}
-                onSelectSchool={(schoolId) => {
-                  handleInputChange('SchoolId', schoolId);
+                onSelectSchool={(id) => {
+                  handleInputChange('SchoolId', id);
                   setShowSchoolDropdown(false);
                 }}
               />
 
-              <GradeDropdown
-                grades={grades}
-                grade={formData.grade}
-                userType={userType}
-                isOpen={showGradeDropdown}
-                onToggle={() => setShowGradeDropdown(!showGradeDropdown)}
-                onSelectGrade={handleGradeToggle}
-              />
-              {/* Password */}
+              <div className={!formData.SchoolId ? "opacity-50 pointer-events-none" : ""}>
+                <GradeDropdown
+                  grades={availableClasses}
+                  grade={formData.grade}
+                  userType={userType}
+                  isOpen={showGradeDropdown}
+                  onToggle={() => {
+                    if (formData.SchoolId && formData.SchoolId !== 0) {
+                      setShowGradeDropdown(!showGradeDropdown);
+                    } else {
+                      alert("אנא בחר בית ספר תחילה");
+                    }
+                  }}
+                  onSelectGrade={handleGradeToggle}
+                />
+                {isLoadingClasses && <p className="text-xs text-cyan-600 mt-1 mr-2 animate-pulse">טוען כיתות...</p>}
+              </div>
+
+              {/* שאר שדות הסיסמה נשארים ללא שינוי */}
               <div className="relative group">
                 <div className="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none text-gray-400 group-focus-within:text-cyan-500 transition-colors">
                   <Lock size={20} />
@@ -263,7 +289,6 @@ export default function RegisterPage() {
                 </button>
               </div>
 
-              {/* Confirm Password */}
               <div className="relative group">
                 <div className="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none text-gray-400 group-focus-within:text-cyan-500 transition-colors">
                   <Lock size={20} />
@@ -287,11 +312,8 @@ export default function RegisterPage() {
             </div>
 
             <AuthSubmitButton label={userType === 'student' ? 'הרשמה כתלמיד' : 'הרשמה כמורה'} />
-
             <AuthProviderDivider text="או הרשמו באמצעות" />
-
             <GoogleAuthButton />
-
             <AuthSwitchPrompt
               prefix="כבר יש לך חשבון?"
               actionText="כניסה למערכת"
