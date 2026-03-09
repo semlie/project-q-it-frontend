@@ -1,11 +1,10 @@
 export type UserType = {
-  userId: number | 0;
+  userId: number;
   userName: string;
   userEmail: string;
-  userPassword: string;
   role: 'student' | 'teacher';
   userImageUrl?: string;
-  schoolId: number;
+  classId: number;
 };
 export type UserLoginType = {
   userEmail: string;

@@ -59,10 +59,10 @@ export default function ProfileTab({
       </div>
 
       <div className="settings-form-group">
-        <label className="settings-label">מזהה בית ספר</label>
+        <label className="settings-label">מזהה כיתה</label>
         <input
           type="text"
-          value={userData?.schoolId || ''}
+          value={userData?.classId || ''}
           className="settings-input"
           disabled
           style={{ backgroundColor: '#f3f4f6', cursor: 'not-allowed' }}

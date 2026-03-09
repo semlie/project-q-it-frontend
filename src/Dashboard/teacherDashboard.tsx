@@ -77,7 +77,7 @@ export default function QaitTeacherDashboard() {
     { label: 'אימייל', value: user?.userEmail || 'לא זמין' },
     { label: 'תפקיד', value: '👨‍🏫 מורה' },
     { label: 'מזהה משתמש', value: user?.userId || 'לא זמין' },
-    { label: 'מזהה בית ספר', value: user?.schoolId || 'לא זמין' },
+    { label: 'מזהה כיתה', value: user?.classId || 'לא זמין' },
   ];
 
   const renderComingSoon = (title: string, subtitle: string, icon: React.ReactNode, message: string) => (
