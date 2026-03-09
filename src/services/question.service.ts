@@ -10,11 +10,11 @@ export const addQuestion = async (credentials: QuestionType) => {
 };
 export const addAnswerOptions = async (options: AnswerOptionsType) => {
   const payload = {
-    answerOptionsId: (options as any).answerOptionsId ?? options.AnswerOptionsId ?? 0,
-    questionId: (options as any).questionId ?? options.QuestionId ?? 0,
-    option: (options as any).option ?? options.Option ?? '',
-    isCorrect: (options as any).isCorrect ?? options.IsCorrect ?? false,
-    description: (options as any).description ?? options.Description ?? '',
+    answerOptionsId: options.AnswerOptionsId ?? 0,
+    questionId: options.QuestionId ?? 0,
+    option: options.Option ?? '',
+    isCorrect: options.IsCorrect ?? false,
+    description: options.Description ?? '',
   };
   const response = await axios.post(`${url}/AnswerOptions`, payload);
   const data = response.data;
