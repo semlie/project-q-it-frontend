@@ -5,13 +5,17 @@ export interface SchoolOption {
   name: string;
 }
 
-export type GradeValue = string | string[];
+export interface ClassOption {
+  classId: number;
+  className: string;
+}
 
 export interface RegisterFormData {
   UserName: string;
   UserEmail: string;
   UserPassword: string;
   confirmPassword: string;
-  SchoolId: number;
-  grade: GradeValue;
+  SchoolId: number;        // For UI filtering (school → classes)
+  ClassId: number;         // Maps to Users.ClassId
+  TeacherClassIds: number[]; // For teachers (TeacherClass table)
 }

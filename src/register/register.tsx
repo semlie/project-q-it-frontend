@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Mail, Lock, Eye, EyeOff, User, Zap } from 'lucide-react';
 import './register.css';
 import { useNavigate } from 'react-router';
-import { register as registerService } from '../services/auth.service.ts';
+import { register as registerService, addTeacherClass } from '../services/auth.service.ts';
 import { Paths } from '../routes/paths';
 import AuthVisualPanel from '../components/auth/AuthVisualPanel';
 import GoogleAuthButton from '../components/auth/GoogleAuthButton';
@@ -14,7 +14,7 @@ import UserTypeSelector from './components/UserTypeSelector';
 import ProfileImageUpload from './components/ProfileImageUpload';
 import SchoolDropdown from './components/SchoolDropdown';
 import GradeDropdown from './components/GradeDropdown';
-import { RegisterFormData, UserType } from './components/types';
+import { ClassOption, RegisterFormData, UserType } from './components/types';
 import { getSchools, getClassesBySchoolId } from '../services/schools.service.ts';
 
 const logoImage = new URL('../assets/images/logo-q-it.png', import.meta.url).href;
@@ -29,9 +29,9 @@ export default function RegisterPage() {
   const [profileImage, setProfileImage] = useState<File | null>(null);
   const [profileImagePreview, setProfileImagePreview] = useState<string>('');
   
-  // schools הוא עכשיו מערך של אובייקטים: { id: number, nameSchool: string }
+  // schools הוא עכשיו מערך של אובייקטים: { schoolId: number, nameSchool: string }
   const [schools, setSchools] = useState<any[]>([]);
-  const [availableClasses, setAvailableClasses] = useState<string[]>([]);
+  const [availableClasses, setAvailableClasses] = useState<ClassOption[]>([]);
   const [isLoadingClasses, setIsLoadingClasses] = useState(false);
 
   const [formData, setFormData] = useState<RegisterFormData>({
@@ -39,8 +39,9 @@ export default function RegisterPage() {
     UserEmail: '',
     UserPassword: '',
     confirmPassword: '',
-    SchoolId: 0, // חזר להיות מספר
-    grade: '' as string | string[]
+    SchoolId: 0,
+    ClassId: 0,
+    TeacherClassIds: []
   });
 
   // שליפת בתי הספר (אובייקטים)
@@ -61,7 +62,6 @@ useEffect(() => {
  // שליפת כיתות לפי ה-ID של בית הספר
 useEffect(() => {
   const fetchClasses = async () => {
-    // בדיקה שבאמת נבחר ID תקין (גדול מ-0)
     if (!formData.SchoolId || formData.SchoolId === 0) {
       setAvailableClasses([]);
       return;
@@ -69,17 +69,13 @@ useEffect(() => {
     setIsLoadingClasses(true);
     try {
       const rawClassesData = await getClassesBySchoolId(Number(formData.SchoolId));
-      console.log("Classes from server:", rawClassesData); // לבדיקה בקונסול
-      // כאן התיקון הקריטי: 
-      // השרת מחזיר className, לכן נחלץ אותו. 
-      // הוספתי הגנה למקרה שהשדה מגיע בשם אחר.
-      const formattedClasses = rawClassesData.map((item: any) => {
-        if (typeof item === 'object') {
-          return item.className || item.nameClass || "כיתה ללא שם";
-        }
-        return item;
-      });
-      setAvailableClasses(formattedClasses || []);
+      console.log("Classes from server:", rawClassesData);
+      // ממפים לאובייקטי ClassOption עם classId ו-className
+      const formattedClasses: ClassOption[] = rawClassesData.map((item: any) => ({
+        classId: item.classId || item.id || 0,
+        className: item.className || item.nameClass || "כיתה ללא שם",
+      }));
+      setAvailableClasses(formattedClasses);
     } catch (error) {
       console.error("Failed to fetch classes:", error);
       setAvailableClasses([]);
@@ -95,29 +91,40 @@ useEffect(() => {
         alert("הסיסמאות אינן תואמות");
         return;
     }
-
-    let user = { ...formData, userType };
     
     try {
-      if (userType === 'student' && Array.isArray(user.grade)) {
-        user.grade = user.grade[0]; 
-      }
-      
       const formDataToSend = new FormData();
-      formDataToSend.append('UserName', user.UserName);
-      formDataToSend.append('UserEmail', user.UserEmail);
-      formDataToSend.append('UserPassword', user.UserPassword);
-      formDataToSend.append('Role', user.userType);
-      formDataToSend.append('SchoolId', user.SchoolId.toString());
+      formDataToSend.append('UserName', formData.UserName);
+      formDataToSend.append('UserEmail', formData.UserEmail);
+      formDataToSend.append('UserPassword', formData.UserPassword);
+      formDataToSend.append('Role', userType);
       
-      const gradeValue = Array.isArray(user.grade) ? user.grade.join(',') : user.grade;
-      formDataToSend.append('Grade', gradeValue);
+      if (userType === 'student') {
+        // תלמיד — שליחת ClassId בהתאם לטבלת Users
+        formDataToSend.append('ClassId', formData.ClassId.toString());
+      }
+      // מורה — ללא ClassId, רק ClassIds שיתווספו אחרי היצירה דרך addTeacherClass
       
       if (profileImage) {
         formDataToSend.append('FileImage', profileImage);
       }
       
-      await registerService(formDataToSend);
+      const createdUser = await registerService(formDataToSend);
+      
+      // אם מורה — addTeacherClass לכל כיתה שנבחרה
+      if (userType === 'teacher' && formData.TeacherClassIds.length > 0) {
+        const teacherId = createdUser?.userId || createdUser?.id || createdUser?.UserId || createdUser;
+        console.log('Register response:', createdUser, 'teacherId:', teacherId);
+        
+        if (teacherId) {
+          await Promise.all(
+            formData.TeacherClassIds.map(classId =>
+              addTeacherClass(Number(teacherId), classId)
+            )
+          );
+        }
+      }
+      
       alert('🎉 ההרשמה הושלמה בהצלחה!');
       navigate(`/${Paths.login}`);
     } catch (error) {
@@ -145,16 +152,16 @@ useEffect(() => {
     setProfileImagePreview('');
   };
 
-  const handleGradeToggle = (grade: string) => {
+  const handleClassToggle = (classId: number) => {
     if (userType === 'teacher') {
       setFormData(prev => {
-        const currentGrades = Array.isArray(prev.grade) ? prev.grade : [];
-        const isSelected = currentGrades.includes(grade);
-        const newGrades = isSelected ? currentGrades.filter(g => g !== grade) : [...currentGrades, grade];
-        return { ...prev, grade: newGrades };
+        const current = prev.TeacherClassIds;
+        const isSelected = current.includes(classId);
+        const updated = isSelected ? current.filter(id => id !== classId) : [...current, classId];
+        return { ...prev, TeacherClassIds: updated };
       });
     } else {
-      handleInputChange('grade', grade);
+      handleInputChange('ClassId', classId);
       setShowGradeDropdown(false);
     }
   };
@@ -251,8 +258,8 @@ useEffect(() => {
 
               <div className={!formData.SchoolId ? "opacity-50 pointer-events-none" : ""}>
                 <GradeDropdown
-                  grades={availableClasses}
-                  grade={formData.grade}
+                  classes={availableClasses}
+                  selectedIds={userType === 'teacher' ? formData.TeacherClassIds : formData.ClassId}
                   userType={userType}
                   isOpen={showGradeDropdown}
                   onToggle={() => {
@@ -262,7 +269,7 @@ useEffect(() => {
                       alert("אנא בחר בית ספר תחילה");
                     }
                   }}
-                  onSelectGrade={handleGradeToggle}
+                  onSelectClass={handleClassToggle}
                 />
                 {isLoadingClasses && <p className="text-xs text-cyan-600 mt-1 mr-2 animate-pulse">טוען כיתות...</p>}
               </div>
