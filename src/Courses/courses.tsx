@@ -9,19 +9,6 @@ import CoursesEmptyState from './components/CoursesEmptyState';
 import { Course, CourseFilter } from './components/types';
 import { styles } from './components/styles';
 
-// Add keyframe animation for spinner
-const spinnerStyles = document.createElement('style');
-spinnerStyles.innerHTML = `
-  @keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-  }
-`;
-if (!document.querySelector('#spinner-styles')) {
-  spinnerStyles.id = 'spinner-styles';
-  document.head.appendChild(spinnerStyles);
-}
-
 export default function QaitCoursesList() {
   const [searchQuery, setSearchQuery] = useState('');
   const [filterBy, setFilterBy] = useState<CourseFilter>('all');
@@ -30,7 +17,6 @@ export default function QaitCoursesList() {
   const [error, setError] = useState<string | null>(null);
   const { user } = useAuth();
 
-  // Helper function to normalize course data from server
   const normalizeCourse = (course: any): Course => ({
     id: course.courseId || course.id || 0,
     name: course.courseName || course.name || 'ללא שם',
@@ -41,12 +27,12 @@ export default function QaitCoursesList() {
     progress: course.progress || 0,
     chapters: course.chapters || 0,
     completedChapters: course.completedChapters || 0,
-    nextClass: course.nextClass || 'לא נקבע',
     students: course.students || 0,
     averageGrade: course.averageGrade || 0,
     materials: course.materials || 0,
     tests: course.tests || 0,
     upcomingTest: course.upcomingTest || null,
+    schoolId: course.schoolId || 0,
   });
 
   useEffect(() => {
@@ -56,14 +42,11 @@ export default function QaitCoursesList() {
         setError(null);
         if (user) {
           const data = await getCoursesByIdUser(user.userId);
-          console.log('Fetched courses:', data);
           
-          // Check if response is an error message
           if (typeof data === 'string' && data.includes('not found')) {
             setError(data);
             setCoursesData([]);
           } else if (Array.isArray(data)) {
-            // Normalize array of courses
             const normalized = data.map(normalizeCourse);
             setCoursesData(normalized);
           } else if (data && typeof data === 'object') {
@@ -74,7 +57,6 @@ export default function QaitCoursesList() {
           }
         }
       } catch (error: any) {
-        console.error('Error fetching courses:', error);
         setError(error?.message || 'שגיאה בטעינת הקורסים');
         setCoursesData([]);
       } finally {
@@ -84,6 +66,7 @@ export default function QaitCoursesList() {
 
     fetchCourses();
   }, [user]);
+
   const filteredCourses = coursesData.filter((course) => {
     const matchesSearch = course.name?.includes(searchQuery) || 
                          course.teacher?.includes(searchQuery) ||
@@ -99,7 +82,6 @@ export default function QaitCoursesList() {
 
   return (
     <div style={styles.container} dir="rtl">
-      {/* Header */}
       <div style={styles.header}>
         <div>
           <h1 style={styles.title}>הקורסים שלי</h1>
@@ -107,10 +89,8 @@ export default function QaitCoursesList() {
         </div>
       </div>
 
-      {/* Stats Overview */}
       <CoursesStatsOverview filteredCourses={filteredCourses} />
 
-      {/* Controls */}
       <CoursesControls
         searchQuery={searchQuery}
         filterBy={filterBy}
@@ -118,7 +98,6 @@ export default function QaitCoursesList() {
         onFilterChange={setFilterBy}
       />
 
-      {/* Courses Grid */}
       {loading ? (
         <CoursesEmptyState
           title="טוען קורסים..."

@@ -1,7 +1,7 @@
 export type MaterialsType = {
-  id: number;
-  title: string;
-  description: string;
+  matId: number;
+  matName: string;
+  matDescription: string;
+  matLink: string;
   courseId: number;
-  url: string;
 };

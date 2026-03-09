@@ -43,6 +43,7 @@ function normalizeCourse(course: any): Course {
     materials: course.materials || 0,
     tests: course.tests || 0,
     upcomingTest: course.upcomingTest || null,
+    schoolId: course.schoolId || 0,
   };
 }
 
