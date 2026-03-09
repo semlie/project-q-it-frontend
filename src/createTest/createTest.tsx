@@ -197,9 +197,9 @@ const generateQuestionsWithAI = async () => {
               <input type="text" value={testData.title} onChange={(e) => setTestData({...testData, title: e.target.value})} style={styles.input} />
             </div>
             <div style={styles.formGroup}>
-              <label style={styles.label}>נושא</label>
+              <label style={styles.label}>קורס</label>
               <select value={testData.subject} onChange={(e) => setTestData({...testData, subject: e.target.value})} style={styles.select}>
-                <option value="">בחר נושא</option>
+                <option value="">בחר קורס</option>
                 {subjects.map(s => <option key={s} value={s}>{s}</option>)}
               </select>
             </div>
