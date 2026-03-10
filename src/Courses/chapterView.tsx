@@ -435,7 +435,7 @@ export default function QaitCourseChapterPage() {
                     disabled={test.questionCount === 0}
                     onClick={() => {
                       if (test.questionCount > 0 && chapterId) {
-                        navigate(`/${Paths.takeTest.replace(':chapterId', chapterId)}`);
+                        navigate(`/${Paths.takeTest.replace(':chapterId', chapterId).replace(':level', test.level)}`);
                       }
                     }}
                   >

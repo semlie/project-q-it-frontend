@@ -5,7 +5,7 @@ import { Paths } from '../routes/paths';
 import { AuthContext } from '../context/AuthContext';
 
 const TakeTest: React.FC = () => {
-  const { chapterId } = useParams<{ chapterId: string }>();
+  const { chapterId, level } = useParams<{ chapterId: string; level: string }>();
   const navigate = useNavigate();
   const { user } = useContext(AuthContext);
   
@@ -20,11 +20,23 @@ const TakeTest: React.FC = () => {
   const [showResults, setShowResults] = useState(false);
   const [finalResult, setFinalResult] = useState<any>(null);
 
+  const levelMap: { [key: string]: number } = {
+    'קל': 1,
+    'בינוני': 2,
+    'קשה': 3
+  };
+
   useEffect(() => {
     const loadQuestions = async () => {
       if (!chapterId) return;
+      if (!user?.userId) {
+        console.error('User not logged in');
+        setLoading(false);
+        return;
+      }
       try {
-        const data = await getQuestionsForChapter(parseInt(chapterId));
+        const levelNum = level ? levelMap[level] : undefined;
+        const data = await getQuestionsForChapter(parseInt(chapterId), levelNum);
         setQuestions(data);
       } catch (error) {
         console.error('Error loading questions:', error);
@@ -33,7 +45,7 @@ const TakeTest: React.FC = () => {
       }
     };
     loadQuestions();
-  }, [chapterId]);
+  }, [chapterId, level, user]);
 
   const handleAnswerSelect = (answerId: number) => {
     if (!isAnswered) {
@@ -45,6 +57,11 @@ const TakeTest: React.FC = () => {
     if (selectedAnswer === null || !questions[currentIndex]) return;
 
     const userId = user?.userId;
+    if (!userId) {
+      alert('יש להתחבר למערכת כדי לענות על שאלות');
+      return;
+    }
+
     const questionId = questions[currentIndex].questionId;
     const answerId = selectedAnswer.toString();
 
@@ -55,8 +72,9 @@ const TakeTest: React.FC = () => {
       if (result.isCorrect) {
         setScore(prev => prev + 1);
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error submitting answer:', error);
+      alert('שגיאה בשליחת התשובה: ' + (error.response?.data || error.message));
     }
   };
 
@@ -73,14 +91,21 @@ const TakeTest: React.FC = () => {
 
   const handleFinish = async () => {
     const userId = user?.userId;
+    if (!userId) {
+      alert('יש להתחבר למערכת כדי לסיים את המבחן');
+      return;
+    }
+    if (!chapterId) return;
+
     const duration = Math.round((Date.now() - startTime) / 1000);
     
     try {
-      const result = await finishTest(userId, parseInt(chapterId!), duration);
+      const result = await finishTest(userId, parseInt(chapterId), duration, score, questions.length);
       setFinalResult(result);
       setShowResults(true);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error finishing test:', error);
+      alert('שגיאה בשמירת התוצאות: ' + (error.response?.data || error.message));
     }
   };
 
@@ -104,10 +129,26 @@ const TakeTest: React.FC = () => {
 
   const currentQuestion = questions[currentIndex];
 
-  if (loading) {
+  if (loading || !currentQuestion) {
     return (
       <div style={styles.container} dir="rtl">
         <div style={styles.loading}>טוען שאלות...</div>
+      </div>
+    );
+  }
+
+  if (!user?.userId) {
+    return (
+      <div style={styles.container} dir="rtl">
+        <div style={styles.noQuestions}>
+          <h2>יש להתחבר למערכת כדי לגשת למבחן</h2>
+          <button 
+            style={styles.backButton}
+            onClick={() => navigate('/login')}
+          >
+            התחברות
+          </button>
+        </div>
       </div>
     );
   }
@@ -116,7 +157,7 @@ const TakeTest: React.FC = () => {
     return (
       <div style={styles.container} dir="rtl">
         <div style={styles.noQuestions}>
-          <h2>אין שאלות בפרק זה</h2>
+          <h2>אין שאלות ברמה זו</h2>
           <button 
             style={styles.backButton}
             onClick={() => navigate(Paths.dashboard)}
@@ -162,17 +203,6 @@ const TakeTest: React.FC = () => {
           </div>
 
           <p style={{...styles.resultMessage, color: messageColor}}>{message}</p>
-
-          <div style={styles.resultsDetails}>
-            <div style={styles.detailItem}>
-              <span style={styles.detailLabel}>תשובות נכונות:</span>
-              <span style={{...styles.detailValue, color: '#22c55e'}}>{finalResult.correctAnswers.length}</span>
-            </div>
-            <div style={styles.detailItem}>
-              <span style={styles.detailLabel}>תשובות שגויות:</span>
-              <span style={{...styles.detailValue, color: '#ef4444'}}>{finalResult.wrongAnswers.length}</span>
-            </div>
-          </div>
 
           <button 
             style={styles.finishButton}
@@ -223,7 +253,6 @@ const TakeTest: React.FC = () => {
               const isCorrectAnswer = answer.isCorrect;
               
               let answerStyle = {...styles.answerCard};
-              let isSelectedStyle = false;
               
               if (isAnswered) {
                 if (isCorrectAnswer) {

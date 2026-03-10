@@ -27,8 +27,12 @@ export interface TestResult {
   wrongAnswers: number[];
 }
 
-export const getQuestionsForChapter = async (chapterId: number): Promise<TestQuestion[]> => {
-  const response = await axios.get(`${url}/chapter/${chapterId}`);
+export const getQuestionsForChapter = async (chapterId: number, level?: number): Promise<TestQuestion[]> => {
+  let endpoint = `${url}/chapter/${chapterId}`;
+  if (level) {
+    endpoint += `/level/${level}`;
+  }
+  const response = await axios.get(endpoint);
   return response.data;
 };
 
@@ -48,12 +52,16 @@ export const submitAnswer = async (
 export const finishTest = async (
   studentId: number,
   chapterId: number,
-  duration: number
+  duration: number,
+  correctCount: number,
+  totalQuestions: number
 ): Promise<TestResult> => {
   const response = await axios.post(`${url}/finish`, {
     studentId,
     chapterId,
-    duration
+    duration,
+    correctCount,
+    totalQuestions
   });
   return response.data;
 };
