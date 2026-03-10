@@ -11,4 +11,6 @@ export const Paths = {
   createTest: 'create-test',
   courseDetails: 'courses/:courseId',
   courseChapter: 'courses/:courseId/chapters/:chapterId',
+  takeTest: 'test/:chapterId',
+  testResults: 'test/:chapterId/results',
 };

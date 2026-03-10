@@ -1,7 +1,9 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState, useContext } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router';
 import { ArrowRight, BookOpen, CheckCircle2, ClipboardList } from 'lucide-react';
 import { getChaptersByCourseId } from '../services/chapter.service';
+import { Paths } from '../routes/paths';
+import { AuthContext } from '../context/AuthContext';
 
 type DifficultyLevel = 'מעורבב' | 'קל' | 'בינוני' | 'קשה';
 
@@ -431,7 +433,11 @@ export default function QaitCourseChapterPage() {
                     type="button"
                     style={test.questionCount > 0 ? styles.enterExamBtn : styles.enterExamBtnDisabled}
                     disabled={test.questionCount === 0}
-                    onClick={() => setSelectedLevel(test.level)}
+                    onClick={() => {
+                      if (test.questionCount > 0 && chapterId) {
+                        navigate(`/${Paths.takeTest.replace(':chapterId', chapterId)}`);
+                      }
+                    }}
                   >
                     כניסה למבחן
                   </button>
