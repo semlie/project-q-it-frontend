@@ -5,7 +5,7 @@ import './dashboard.css';
 import QaitStudentDashboard from './studentDashboard';
 export default function QaitDashboard() {
   const { user } = useAuth();
-  if (user?.role === 'teacher') {
+  if (user?.role?.toLowerCase() === 'teacher') {
     return <QaitTeacherDashboard />;
   }
   return <QaitStudentDashboard />;

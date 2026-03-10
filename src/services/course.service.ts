@@ -4,9 +4,9 @@ import { CourseType } from '../types/courseType';
 
 const url = '/api';
 
-export const getCoursesByIdUser = async (userId: number) => {
+export const getCoursesByIdSchool = async (schoolId: number) => {
   try {
-    const response = await axios.get(`${url}/Course/${userId}`);
+    const response = await axios.get(`${url}/Course/school/${schoolId}`);
     return response.data;
   } catch (error) {
     console.error('Error fetching courses:', error);

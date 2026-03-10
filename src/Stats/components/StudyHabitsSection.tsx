@@ -4,10 +4,18 @@ import { styles } from './styles';
 import { StudyHabits } from './types';
 
 interface StudyHabitsSectionProps {
-  studyHabits: StudyHabits;
+  studyHabits: StudyHabits | null;
 }
 
 export default function StudyHabitsSection({ studyHabits }: StudyHabitsSectionProps) {
+  const habits = studyHabits || {
+    bestTimeOfDay: "-",
+    avgSessionLength: "-",
+    preferredSubject: "-",
+    studyStreak: 0,
+    totalStudyTime: "-"
+  };
+  
   return (
     <div style={styles.section}>
       <SectionTitle icon={<Zap size={20} />} title="הרגלי למידה" />
@@ -18,7 +26,7 @@ export default function StudyHabitsSection({ studyHabits }: StudyHabitsSectionPr
           </div>
           <div style={styles.habitContent}>
             <div style={styles.habitLabel}>זמן אופטימלי</div>
-            <div style={styles.habitValue}>{studyHabits.bestTimeOfDay}</div>
+            <div style={styles.habitValue}>{habits.bestTimeOfDay}</div>
           </div>
         </div>
 
@@ -28,7 +36,7 @@ export default function StudyHabitsSection({ studyHabits }: StudyHabitsSectionPr
           </div>
           <div style={styles.habitContent}>
             <div style={styles.habitLabel}>אורך סשן ממוצע</div>
-            <div style={styles.habitValue}>{studyHabits.avgSessionLength}</div>
+            <div style={styles.habitValue}>{habits.avgSessionLength}</div>
           </div>
         </div>
 
@@ -38,7 +46,7 @@ export default function StudyHabitsSection({ studyHabits }: StudyHabitsSectionPr
           </div>
           <div style={styles.habitContent}>
             <div style={styles.habitLabel}>נושא מועדף</div>
-            <div style={styles.habitValue}>{studyHabits.preferredSubject}</div>
+            <div style={styles.habitValue}>{habits.preferredSubject}</div>
           </div>
         </div>
 
@@ -48,7 +56,7 @@ export default function StudyHabitsSection({ studyHabits }: StudyHabitsSectionPr
           </div>
           <div style={styles.habitContent}>
             <div style={styles.habitLabel}>רצף למידה</div>
-            <div style={styles.habitValue}>{studyHabits.studyStreak} ימים 🔥</div>
+            <div style={styles.habitValue}>{habits.studyStreak} ימים</div>
           </div>
         </div>
       </div>
