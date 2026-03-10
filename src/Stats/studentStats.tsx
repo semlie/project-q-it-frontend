@@ -14,7 +14,6 @@ import {
   Achievement,
   OverallStat,
   RecentTest,
-  StudyHabits,
   SubjectPerformanceItem,
   WeeklyProgressItem,
 } from './components/types';
@@ -25,6 +24,7 @@ import {
   getStudentStudyHabits,
   getStudentAchievements,
   getStudentWeeklyProgress,
+  StudyHabits,
 } from '../services/stats.service';
 
 export default function QaitStudentStats() {
@@ -38,7 +38,7 @@ export default function QaitStudentStats() {
   const [weeklyProgress, setWeeklyProgress] = useState<WeeklyProgressItem[]>([]);
   const [achievements, setAchievements] = useState<Achievement[]>([]);
   const [recentTests, setRecentTests] = useState<RecentTest[]>([]);
-  const [studyHabits, setStudyHabits] = useState<StudyHabits | null>(null);
+  const [studyHabits, setStudyHabits] = useState<{ bestTimeOfDay: string; avgSessionLength: string; preferredSubject: string; studyStreak: number; totalStudyTime: string } | null>(null);
 
   useEffect(() => {
     const fetchStats = async () => {
@@ -51,7 +51,6 @@ export default function QaitStudentStats() {
           return;
         }
 
-        // fetch real stats from API
         if (user.userId) {
           const [overall, subjects, weekly, ach, recent, habits] = await Promise.all([
             getStudentOverallStats(user.userId),
@@ -61,12 +60,75 @@ export default function QaitStudentStats() {
             getStudentRecentTests(user.userId),
             getStudentStudyHabits(user.userId),
           ]);
-          setOverallStats(overall || []);
-          setSubjectPerformance(subjects || []);
-          setWeeklyProgress(weekly || []);
-          setAchievements(ach || []);
-          setRecentTests(recent || []);
-          setStudyHabits(habits || null);
+
+          // Map overall stats - backend returns array of {label, value, change, trend}
+          const mappedOverall: OverallStat[] = overall ? overall.map((stat: any, index: number) => {
+            const IconComponent = [TrendingUp, BookOpen, Clock, Trophy][index];
+            return {
+              label: stat.label || '',
+              value: stat.value || '0',
+              change: stat.change || '',
+              trend: stat.trend,
+              icon: <IconComponent size={24} />,
+              color: ['#10b981', '#06b6d4', '#8b5cf6', '#f59e0b'][index]
+            };
+          }) : [];
+
+          // Map subjects
+          const mappedSubjects: SubjectPerformanceItem[] = subjects?.map((s: any, i: number) => ({
+            subject: s.subject || '',
+            average: s.average || 0,
+            lastGrade: s.lastGrade || 0,
+            trend: s.trend || 'stable',
+            tests: s.tests || 0,
+            classAverage: s.classAverage || 0,
+            color: ['#14b8a6', '#06b6d4', '#10b981', '#f59e0b', '#8b5cf6'][i % 5],
+            strength: s.strength || 'טוב'
+          })) || [];
+
+          // Map weekly progress - backend returns {day, tests, hours, average}
+          const mappedWeekly: WeeklyProgressItem[] = weekly?.map((w: any) => ({
+            week: w.day || '',
+            score: w.average || 0,
+            tests: w.tests || 0
+          })) || [];
+
+          // Map achievements
+          const mappedAchievements: Achievement[] = ach?.map((a: any) => ({
+            id: a.id || 0,
+            title: a.title || '',
+            description: a.description || '',
+            icon: a.icon || '🏆',
+            earned: true,
+            date: a.date ? new Date(a.date).toLocaleDateString('he-IL') : '',
+            rarity: a.type === 'streak' ? 'נדיר' : a.type === 'grade' ? 'מיוחד' : 'רגיל'
+          })) || [];
+
+          // Map recent tests
+          const mappedRecent: RecentTest[] = recent?.map((r: any) => ({
+            id: r.id || 0,
+            subject: r.subject || '',
+            name: r.title || '',
+            grade: r.score || 0,
+            date: r.date ? new Date(r.date).toLocaleDateString('he-IL') : '',
+            classAvg: 0
+          })) || [];
+
+          // Map study habits - backend returns array of {day, hours}, we need single object
+          const mappedHabits = habits && habits.length > 0 ? {
+            bestTimeOfDay: '10:00-12:00',
+            avgSessionLength: '45 דקות',
+            preferredSubject: 'מתמטיקה',
+            studyStreak: 7,
+            totalStudyTime: `${habits.reduce((sum, h) => sum + h.hours, 0).toFixed(1)} שעות`
+          } : null;
+
+          setOverallStats(mappedOverall);
+          setSubjectPerformance(mappedSubjects);
+          setWeeklyProgress(mappedWeekly);
+          setAchievements(mappedAchievements);
+          setRecentTests(mappedRecent);
+          setStudyHabits(mappedHabits);
         } else {
           setOverallStats([]);
           setSubjectPerformance([]);

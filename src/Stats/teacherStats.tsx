@@ -3,15 +3,20 @@ import { TrendingUp, Users, BookOpen, FileEdit, Loader2, AlertCircle } from 'luc
 import { useAuth } from '../context/AuthContext';
 import StatsHeader from './components/StatsHeader';
 import { styles } from './components/styles';
+import {
+  getTeacherOverallStats,
+  getTeacherClassProgress,
+  getTeacherSubjects,
+  getTeacherRecentTests,
+} from '../services/stats.service';
 
 interface TeacherOverallStat {
   label: string;
   value: string;
   change?: string;
-  trend?: 'up' | 'down' | 'stable';
+  trend?: string;
   icon: React.ReactNode;
   color: string;
-  total?: string;
 }
 
 interface ClassProgress {
@@ -19,7 +24,7 @@ interface ClassProgress {
   average: number;
   students: number;
   tests: number;
-  trend: 'up' | 'down' | 'stable';
+  trend: string;
   color: string;
 }
 
@@ -29,7 +34,7 @@ interface TeacherSubjectItem {
   students: number;
   averageGrade: number;
   testsCreated: number;
-  trend: 'up' | 'down' | 'stable';
+  trend: string;
   color: string;
 }
 
@@ -65,19 +70,67 @@ export default function QaitTeacherStats() {
           return;
         }
 
-        // TODO: replace with actual API response
-        const mockOverallStats: TeacherOverallStat[] = []; // placeholder array
+        if (user.userId) {
+          const [overall, classes, subs, recent] = await Promise.all([
+            getTeacherOverallStats(user.userId),
+            getTeacherClassProgress(user.userId),
+            getTeacherSubjects(user.userId),
+            getTeacherRecentTests(user.userId),
+          ]);
+          
+          // Map overall stats - backend returns array of {label, value}
+          const mappedOverall: TeacherOverallStat[] = overall ? overall.map((stat: any, index: number) => {
+            const IconComponent = [Users, FileEdit, TrendingUp, BookOpen][index];
+            return {
+              label: stat.label || '',
+              value: stat.value || '0',
+              change: stat.change || '',
+              trend: stat.trend,
+              icon: <IconComponent size={24} />,
+              color: ['#10b981', '#06b6d4', '#f59e0b', '#8b5cf6'][index]
+            };
+          }) : [];
 
-        const mockClassProgress: ClassProgress[] = []; // placeholder
+          const mappedClasses: ClassProgress[] = classes?.map((c: any, i: number) => ({
+            className: c.className || `כיתה ${i + 1}`,
+            average: c.average || 0,
+            students: c.students || 0,
+            tests: c.tests || 0,
+            trend: c.trend || 'stable',
+            color: ['#14b8a6', '#06b6d4', '#10b981', '#f59e0b', '#8b5cf6'][i % 5]
+          })) || [];
 
-        const mockSubjects: TeacherSubjectItem[] = []; // placeholder
+          const mappedSubjects: TeacherSubjectItem[] = subs?.map((s: any, i: number) => ({
+            subject: s.subject || 'נושא',
+            classes: s.classes || 0,
+            students: s.students || 0,
+            averageGrade: s.averageGrade || 0,
+            testsCreated: s.testsCreated || 0,
+            trend: s.trend || 'stable',
+            color: ['#14b8a6', '#06b6d4', '#10b981', '#f59e0b'][i % 4]
+          })) || [];
 
-        const mockRecentTests: TeacherRecentTest[] = []; // placeholder
+          // Backend returns RecentTest: { id, subject, title, date, score, maxScore, duration }
+          const mappedRecent: TeacherRecentTest[] = recent?.map((t: any) => ({
+            id: t.id || 0,
+            subject: t.subject || '',
+            className: '',
+            title: t.title || '',
+            date: t.date ? new Date(t.date).toLocaleDateString('he-IL') : '',
+            submissions: t.maxScore || 0,
+            avgGrade: t.score || 0
+          })) || [];
 
-        setOverallStats(mockOverallStats);
-        setClassProgress(mockClassProgress);
-        setSubjects(mockSubjects);
-        setRecentTests(mockRecentTests);
+          setOverallStats(mappedOverall);
+          setClassProgress(mappedClasses);
+          setSubjects(mappedSubjects);
+          setRecentTests(mappedRecent);
+        } else {
+          setOverallStats([]);
+          setClassProgress([]);
+          setSubjects([]);
+          setRecentTests([]);
+        }
 
       } catch (err: any) {
         setError(err?.message || 'שגיאה בטעינת הסטטיסטיקות');

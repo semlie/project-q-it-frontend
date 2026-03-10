@@ -13,3 +13,8 @@ export const getClassesBySchoolId = async (schoolId: number) => {
   const data = response.data;
   return data;
 };
+export const getClassById = async (classId: number) => {
+  const response = await axios.get(`${url}/Class/${classId}`);
+  const data = response.data;
+  return data;
+};

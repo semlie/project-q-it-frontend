@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router';
 import { ArrowRight, BookOpen, Clock, Download, FileText, GraduationCap, ListChecks, Search, Trophy, Users } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
-import { getCoursesByIdUser } from '../services/course.service';
+import { getCoursesByUserId} from '../services/course.service';
 import { Course } from './components/types';
 import { Paths } from '../routes/paths';
 import { getChaptersByCourseId } from '../services/chapter.service';
@@ -151,7 +151,7 @@ export default function QaitCourseDetailsPage() {
 
       try {
         setLoading(true);
-        const data = await getCoursesByIdUser(user.userId);
+        const data = await getCoursesByUserId(user.userId);
         if (Array.isArray(data)) {
           const foundRaw = data.find((item) => String(item.courseId || item.id) === String(courseId));
           setCourse(foundRaw ? normalizeCourse(foundRaw) : null);

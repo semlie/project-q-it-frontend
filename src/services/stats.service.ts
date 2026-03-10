@@ -6,28 +6,23 @@ export interface OverallStat {
   label: string;
   value: string;
   change?: string;
-  trend?: 'up' | 'down' | 'stable';
-  icon?: React.ReactNode;
-  color?: string;
-  total?: string;
+  trend?: string;
 }
 
 export interface SubjectPerformanceItem {
   subject: string;
   average: number;
   lastGrade: number;
-  trend: 'up' | 'down' | 'stable';
+  trend: string;
   tests: number;
   classAverage: number;
-  color: string;
-  strength: string;
 }
 
 export interface RecentTest {
   id: number;
   subject: string;
   title: string;
-  date: string;
+  date: Date | string;
   score: number;
   maxScore: number;
   duration: string;
@@ -43,8 +38,8 @@ export interface Achievement {
   title: string;
   description: string;
   icon: string;
-  date: string;
-  type: 'grade' | 'streak' | 'completion' | 'mastery';
+  date: Date | string;
+  type: string;
 }
 
 export interface WeeklyProgressItem {
@@ -58,10 +53,7 @@ export interface TeacherOverallStat {
   label: string;
   value: string;
   change?: string;
-  trend?: 'up' | 'down' | 'stable';
-  icon?: React.ReactNode;
-  color?: string;
-  total?: string;
+  trend?: string;
 }
 
 export interface ClassProgress {
@@ -69,7 +61,7 @@ export interface ClassProgress {
   average: number;
   students: number;
   tests: number;
-  trend: 'up' | 'down' | 'stable';
+  trend: string;
 }
 
 export interface TeacherSubjectItem {
@@ -78,7 +70,7 @@ export interface TeacherSubjectItem {
   students: number;
   averageGrade: number;
   testsCreated: number;
-  trend: 'up' | 'down' | 'stable';
+  trend: string;
 }
 
 export const getStudentOverallStats = async (userId: number) => {
