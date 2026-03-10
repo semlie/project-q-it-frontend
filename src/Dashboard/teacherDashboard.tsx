@@ -30,6 +30,11 @@ export default function QaitTeacherDashboard() {
       return;
     }
 
+    if (tabId === 'stats') {
+      navigate(`/${Paths.teacherStats}`);
+      return;
+    }
+
     setActiveTab(tabId);
   };
 
@@ -146,12 +151,10 @@ export default function QaitTeacherDashboard() {
               </div>
             </div>
           ) : activeTab === 'stats' ? (
-            renderComingSoon(
-              'סטטיסטיקות כיתה 📊',
-              'עקוב אחר התקדמות וביצועים של הכיתות שלך',
-              <BarChart3 size={64} style={{ color: '#10b981' }} />,
-              'בקרוב תוכל לצפות בסטטיסטיקות מפורטות של כל כיתה, להשוות ביצועים ולזהות תלמידים הזקוקים לתמיכה'
-            )
+            <div style={{textAlign: 'center', padding: '60px 20px'}}>
+              <BarChart3 size={64} style={{ color: '#10b981', marginBottom: '16px' }} />
+              <h2 className="section-title">מעבר לסטטיסטיקות...</h2>
+            </div>
           ) : (
             <>
               <h1 className="welcome-title">שלום, {userData.name}! 👋</h1>

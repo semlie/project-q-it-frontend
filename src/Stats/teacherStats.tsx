@@ -49,7 +49,6 @@ interface TeacherRecentTest {
 }
 
 export default function QaitTeacherStats() {
-  const [timeRange, setTimeRange] = useState('semester');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { user } = useAuth();
@@ -77,6 +76,12 @@ export default function QaitTeacherStats() {
             getTeacherSubjects(user.userId),
             getTeacherRecentTests(user.userId),
           ]);
+
+          console.log('Teacher Stats API Response:');
+          console.log('- Overall:', overall);
+          console.log('- Classes:', classes);
+          console.log('- Subjects:', subs);
+          console.log('- Recent:', recent);
           
           // Map overall stats - backend returns array of {label, value}
           const mappedOverall: TeacherOverallStat[] = overall ? overall.map((stat: any, index: number) => {
@@ -140,7 +145,7 @@ export default function QaitTeacherStats() {
     };
 
     fetchStats();
-  }, [user, timeRange]);
+  }, [user]);
 
   if (loading) {
     return (
@@ -159,97 +164,122 @@ export default function QaitTeacherStats() {
     );
   }
 
+  const hasData = overallStats.length > 0 || classProgress.length > 0 || subjects.length > 0;
+
   return (
     <div style={styles.container} dir="rtl">
-      <StatsHeader timeRange={timeRange} onChangeTimeRange={setTimeRange} />
+      <StatsHeader title="סטטיסטיקות הכיתה"/>
       
-      <div style={styles.overallStatsGrid}>
-        {overallStats.map((stat, index) => (
-          <div key={index} style={styles.statCard}>
-            <div style={{...styles.statIcon, backgroundColor: `${stat.color}20`, color: stat.color}}>
-              {stat.icon}
-            </div>
-            <div style={styles.statContent}>
-              <div style={styles.statLabel}>{stat.label}</div>
-              <div style={styles.statValue}>
-                {stat.value}
-                {stat.total && <span style={styles.statTotal}>{stat.total}</span>}
-              </div>
-              {stat.change && (
-                <div style={{...styles.statChange, color: stat.trend === 'up' ? '#10b981' : stat.trend === 'down' ? '#ef4444' : '#6b7280'}}>
-                  {stat.change}
+      {!hasData ? (
+        <div style={{textAlign: 'center', padding: '60px 20px', backgroundColor: 'white', borderRadius: '12px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)'}}>
+          <BookOpen size={64} style={{color: '#9ca3af', marginBottom: '16px'}} />
+          <h2 style={{fontSize: '20px', fontWeight: '600', color: '#374151', marginBottom: '8px'}}>אין נתונים זמינים</h2>
+          <p style={{color: '#6b7280', fontSize: '14px'}}>טרם נוספו מבחנים או תלמידים לכיתות שלך</p>
+        </div>
+      ) : (
+        <>
+          <div style={styles.statsGrid}>
+            {overallStats.map((stat, index) => (
+              <div key={index} style={styles.statCard}>
+                <div style={{...styles.statIcon, backgroundColor: `${stat.color}20`, color: stat.color}}>
+                  {stat.icon}
                 </div>
-              )}
-            </div>
-          </div>
-        ))}
-      </div>
-
-      <div style={styles.mainLayout}>
-        <div style={styles.leftColumn}>
-          <div style={styles.section}>
-            <h3 style={styles.sectionTitle}>התקדמות כיתות</h3>
-            {classProgress.map((cls, index) => (
-              <div key={index} style={styles.classProgressItem}>
-                <div style={styles.classProgressHeader}>
-                  <span style={styles.className}>{cls.className}</span>
-                  <span style={{...styles.classTrend, color: cls.trend === 'up' ? '#10b981' : cls.trend === 'down' ? '#ef4444' : '#6b7280'}}>
-                    {cls.trend === 'up' ? '↑' : cls.trend === 'down' ? '↓' : '→'}
-                  </span>
-                </div>
-                <div style={styles.progressBarContainer}>
-                  <div style={{...styles.progressBar, width: `${cls.average}%`, backgroundColor: cls.color}} />
-                </div>
-                <div style={styles.classStats}>
-                  <span>ממוצע: {cls.average}%</span>
-                  <span>תלמידים: {cls.students}</span>
-                  <span>מבחנים: {cls.tests}</span>
-                </div>
-              </div>
-            ))}
-          </div>
-
-          <div style={styles.section}>
-            <h3 style={styles.sectionTitle}>נושאים שלימדתי</h3>
-            {subjects.map((subject, index) => (
-              <div key={index} style={styles.subjectItem}>
-                <div style={{...styles.subjectIcon, backgroundColor: `${subject.color}20`, color: subject.color}}>
-                  <BookOpen size={20} />
-                </div>
-                <div style={styles.subjectContent}>
-                  <div style={styles.subjectName}>{subject.subject}</div>
-                  <div style={styles.subjectStats}>
-                    <span>כיתות: {subject.classes}</span>
-                    <span>תלמידים: {subject.students}</span>
-                    <span>ממוצע: {subject.averageGrade}%</span>
+                <div style={styles.statContent}>
+                  <div style={styles.statLabel}>{stat.label}</div>
+                  <div style={styles.statValue}>
+                    {stat.value}
                   </div>
                 </div>
               </div>
             ))}
           </div>
-        </div>
 
-        <div style={styles.rightColumn}>
-          <div style={styles.section}>
-            <h3 style={styles.sectionTitle}>מבחנים אחרונים</h3>
-            {recentTests.map((test) => (
-              <div key={test.id} style={styles.recentTestItem}>
-                <div style={styles.recentTestHeader}>
-                  <span style={styles.recentTestTitle}>{test.title}</span>
-                  <span style={styles.recentTestDate}>{test.date}</span>
+          <div style={styles.mainLayout}>
+            <div style={styles.leftColumn}>
+              {classProgress.length > 0 && (
+                <div style={styles.section}>
+                  <h3 style={styles.sectionTitle}>התקדמות לפי כיתות</h3>
+                  {classProgress.map((cls, index) => (
+                    <div key={index} style={styles.classProgressItem}>
+                      <div style={styles.classProgressHeader}>
+                        <span style={styles.className}>{cls.className}</span>
+                        <span style={{...styles.classTrend, color: '#10b981', fontWeight: 'bold'}}>
+                          {cls.average.toFixed(1)}%
+                        </span>
+                      </div>
+                      <div style={styles.progressBarContainer}>
+                        <div style={{...styles.progressBar, width: `${Math.min(cls.average, 100)}%`, backgroundColor: cls.color}} />
+                      </div>
+                      <div style={styles.classStats}>
+                        <span>👥 {cls.students} תלמידים</span>
+                        <span>📝 {cls.tests} מבחנים</span>
+                      </div>
+                    </div>
+                  ))}
                 </div>
-                <div style={styles.recentTestInfo}>
-                  <span>{test.className}</span>
-                  <span>הגשות: {test.submissions}</span>
-                  <span style={{color: test.avgGrade >= 85 ? '#10b981' : test.avgGrade >= 70 ? '#f59e0b' : '#ef4444'}}>
-                    ממוצע: {test.avgGrade}%
-                  </span>
+              )}
+
+              {subjects.length > 0 && (
+                <div style={styles.section}>
+                  <h3 style={styles.sectionTitle}>ממוצעים לפי מקצוע</h3>
+                  {subjects.map((subject, index) => (
+                    <div key={index} style={styles.subjectItem}>
+                      <div style={{...styles.subjectIcon, backgroundColor: `${subject.color}20`, color: subject.color}}>
+                        <BookOpen size={20} />
+                      </div>
+                      <div style={{...styles.subjectContent, flex: 1}}>
+                        <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px'}}>
+                          <span style={styles.subjectName}>{subject.subject}</span>
+                          <span style={{
+                            fontWeight: 'bold',
+                            fontSize: '16px',
+                            color: subject.averageGrade >= 85 ? '#10b981' : subject.averageGrade >= 70 ? '#f59e0b' : '#ef4444'
+                          }}>
+                            {subject.averageGrade.toFixed(1)}%
+                          </span>
+                        </div>
+                        <div style={styles.progressBarContainer}>
+                          <div style={{...styles.progressBar, width: `${Math.min(subject.averageGrade, 100)}%`, backgroundColor: subject.color}} />
+                        </div>
+                        <div style={styles.subjectStats}>
+                          <span>🏫 {subject.classes} כיתות</span>
+                          <span>👥 {subject.students} תלמידים</span>
+                          <span>📝 {subject.testsCreated} מבחנים</span>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
                 </div>
-              </div>
-            ))}
+              )}
+            </div>
+
+            <div style={styles.rightColumn}>
+              {recentTests.length > 0 && (
+                <div style={styles.section}>
+                  <h3 style={styles.sectionTitle}>מבחנים אחרונים</h3>
+                  {recentTests.map((test) => (
+                    <div key={test.id} style={styles.recentTestItem}>
+                      <div style={styles.recentTestHeader}>
+                        <span style={styles.recentTestTitle}>{test.title}</span>
+                        <span style={styles.recentTestDate}>{test.date}</span>
+                      </div>
+                      <div style={styles.recentTestInfo}>
+                        <span>📚 {test.subject}</span>
+                        <span style={{
+                          fontWeight: 'bold',
+                          color: test.avgGrade >= 85 ? '#10b981' : test.avgGrade >= 70 ? '#f59e0b' : '#ef4444'
+                        }}>
+                          ⭐ {test.avgGrade}%
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
-        </div>
-      </div>
+        </>
+      )}
     </div>
   );
 }

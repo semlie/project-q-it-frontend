@@ -29,5 +29,14 @@ export const updateUser = async (userData: UserType) => {
 
 export const loginByToken = async (token: string) => {
   const response = await axios.get(`${url}/Login/${token}`);
-  return response.data;
+  const userData = response.data;
+  // Normalize role to lowercase (backend returns "Student" or "Teacher")
+  return {
+    userId: userData.userId,
+    userName: userData.userName,
+    userEmail: userData.userEmail,
+    role: userData.role ? userData.role.toLowerCase() : 'student',
+    userImageUrl: userData.userImageUrl,
+    classId: userData.classId
+  };
 };

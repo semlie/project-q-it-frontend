@@ -11,6 +11,7 @@ import QaitStudentStats from '../Stats/studentStats';
 import QaitTeacherStats from '../Stats/teacherStats';
 import { LoginPage } from '../login/login';
 import { ProtectedRoute } from './ProtectedRoute.tsx';
+import { RoleBasedRoute } from './RoleBasedRoute.tsx';
 
 const Routes = () => {
   const router = createBrowserRouter([
@@ -62,7 +63,9 @@ const Routes = () => {
       path: Paths.studentStats,
       element: (
         <ProtectedRoute>
-          <QaitStudentStats />
+          <RoleBasedRoute allowedRoles={['student']}>
+            <QaitStudentStats />
+          </RoleBasedRoute>
         </ProtectedRoute>
       ),
     },
@@ -70,7 +73,9 @@ const Routes = () => {
       path: Paths.teacherStats,
       element: (
         <ProtectedRoute>
-          <QaitTeacherStats />
+          <RoleBasedRoute allowedRoles={['teacher']}>
+            <QaitTeacherStats />
+          </RoleBasedRoute>
         </ProtectedRoute>
       ),
     },

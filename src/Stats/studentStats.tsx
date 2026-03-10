@@ -28,7 +28,6 @@ import {
 } from '../services/stats.service';
 
 export default function QaitStudentStats() {
-  const [timeRange, setTimeRange] = useState('semester');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { user } = useAuth();
@@ -52,9 +51,10 @@ export default function QaitStudentStats() {
         }
 
         if (user.userId) {
-          const [overall, subjects, weekly, ach, recent, habits] = await Promise.all([
+          //habits
+          const [overall, subjects, weekly, ach, recent] = await Promise.all([
             getStudentOverallStats(user.userId),
-            getStudentSubjectPerformance(user.userId, timeRange),
+            //getStudentSubjectPerformance(user.userId, timeRange),
             getStudentWeeklyProgress(user.userId),
             getStudentAchievements(user.userId),
             getStudentRecentTests(user.userId),
@@ -115,20 +115,20 @@ export default function QaitStudentStats() {
           })) || [];
 
           // Map study habits - backend returns array of {day, hours}, we need single object
-          const mappedHabits = habits && habits.length > 0 ? {
-            bestTimeOfDay: '10:00-12:00',
-            avgSessionLength: '45 דקות',
-            preferredSubject: 'מתמטיקה',
-            studyStreak: 7,
-            totalStudyTime: `${habits.reduce((sum, h) => sum + h.hours, 0).toFixed(1)} שעות`
-          } : null;
+          // const mappedHabits = habits && habits.length > 0 ? {
+          //   bestTimeOfDay: '10:00-12:00',
+          //   avgSessionLength: '45 דקות',
+          //   preferredSubject: 'מתמטיקה',
+          //   studyStreak: 7,
+          //   totalStudyTime: `${habits.reduce((sum, h) => sum + h.hours, 0).toFixed(1)} שעות`
+          // } : null;
 
           setOverallStats(mappedOverall);
           setSubjectPerformance(mappedSubjects);
           setWeeklyProgress(mappedWeekly);
           setAchievements(mappedAchievements);
           setRecentTests(mappedRecent);
-          setStudyHabits(mappedHabits);
+          //setStudyHabits(mappedHabits);
         } else {
           setOverallStats([]);
           setSubjectPerformance([]);
@@ -146,7 +146,7 @@ export default function QaitStudentStats() {
     };
 
     fetchStats();
-  }, [user, timeRange]);
+  }, [user]);
 
   if (loading) {
     return (
@@ -167,7 +167,7 @@ export default function QaitStudentStats() {
 
   return (
     <div style={styles.container} dir="rtl">
-      <StatsHeader timeRange={timeRange} onChangeTimeRange={setTimeRange} />
+      <StatsHeader title="הסטטיסטיקות שלי" />
       <OverallStatsGrid stats={overallStats} />
 
       <div style={styles.mainLayout}>
