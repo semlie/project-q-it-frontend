@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Home, Users, FileEdit, BarChart3, Settings, Clock, CheckCircle, TrendingUp, BookOpen, Bell } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router';
@@ -10,10 +10,12 @@ import DashboardTopBar from './components/DashboardTopBar';
 import UserInfoCard from './components/UserInfoCard';
 import StatsGrid from './components/StatsGrid';
 import { DashboardStatItem, DashboardTabItem } from './components/types';
+import { getCoursesByTeacherId } from '../services/course.service';
+import { Course } from '../Courses/components/types';
 
 export default function QaitTeacherDashboard() {
-  
   const [activeTab, setActiveTab] = useState('home');
+  const [courses, setCourses] = useState<Course[]>([]);
   const { user, logout } = useAuth();
   const navigate = useNavigate();
 
@@ -38,17 +40,28 @@ export default function QaitTeacherDashboard() {
     setActiveTab(tabId);
   };
 
+  useEffect(() => {
+    const loadCourses = async () => {
+      if (!user?.userId) return;
+      try {
+        const data = await getCoursesByTeacherId(user.userId);
+        setMyClasses(Array.isArray(data) ? data : []);
+      } catch (err) {
+        console.error('Failed loading teacher courses:', err);
+        setMyClasses([]);
+      }
+    };
+
+    loadCourses();
+  }, [user]);
+
   const userData = {
     name: user?.userName || 'מורה',
     role: 'מורה',
     avatar: user?.userName ? user.userName.substring(0, 2).toUpperCase() : "MT"
   };
 
-  const myClasses = [
-    { id: 1, name: "כיתה י'1", subject: "מתמטיקה", students: 28, avgGrade: 87, nextClass: "מחר, 10:00" },
-    { id: 2, name: "כיתה י'2", subject: "מתמטיקה", students: 25, avgGrade: 82, nextClass: "יום ד', 13:00" },
-    { id: 3, name: "כיתה יא'3", subject: "מתמטיקה מתקדמת", students: 22, avgGrade: 91, nextClass: "יום ב', 09:00" }
-  ];
+  const [myClasses, setMyClasses] = useState<Course[]>([]);
 
   const upcomingTests = [
     { id: 1, className: "כיתה י'1", title: "מבחן באלגברה", date: "מחר, 10:00", questions: 25, duration: "45 דקות" },
@@ -124,29 +137,37 @@ export default function QaitTeacherDashboard() {
             <QaitSettings />
           ) : activeTab === 'classes' ? (
             <div>
-              <h1 className="welcome-title">הכיתות שלי 👥</h1>
-              <p className="welcome-subtitle">נהל את כל הכיתות והתלמידים שלך</p>
+              <h1 className="welcome-title">הקורסים שלי</h1>
+              <p className="welcome-subtitle">נהל את כל הקורסים שלך</p>
               
               <div className="dashboard-section" style={{ marginTop: '24px' }}>
                 <div className="tests-list">
-                  {myClasses.map(cls => (
-                    <div key={cls.id} className="test-card">
-                      <div className="test-card-header">
-                        <div className="test-subject">{cls.subject}</div>
-                        <div className="test-date">
-                          <Clock size={16} />
-                          {cls.nextClass}
+                  {myClasses.map((course) => {
+                    const courseName = (course as any).courseName || (course as any).name || 'קורס';
+                    const courseSubject = (course as any).description || 'קורס';
+                    const nextClass = (course as any).nextClass || '';
+
+                    return (
+                      <div key={(course as any).courseId || (course as any).id} className="test-card">
+                        <div className="test-card-header">
+                          <div className="test-subject">{courseSubject}</div>
+                          {nextClass && (
+                            <div className="test-date">
+                              <Clock size={16} />
+                              {nextClass}
+                            </div>
+                          )}
                         </div>
+                        <h3 className="test-title">{courseName}</h3>
+                        <div className="test-details">
+                          <span>{(course as any).students ?? '–'} תלמידים</span>
+                          <span>•</span>
+                          <span>ממוצע: {(course as any).averageGrade ?? '–'}</span>
+                        </div>
+                        <button className="start-test-button">צפה בכיתה</button>
                       </div>
-                      <h3 className="test-title">{cls.name}</h3>
-                      <div className="test-details">
-                        <span>{cls.students} תלמידים</span>
-                        <span>•</span>
-                        <span>ממוצע: {cls.avgGrade}</span>
-                      </div>
-                      <button className="start-test-button">צפה בכיתה</button>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
             </div>

@@ -13,7 +13,7 @@ export interface Course {
   materials: number;
   tests: number;
   upcomingTest: string | null;
-  schoolId: number;
+  classId: number;
 }
 
 export type CourseFilter = 'all' | 'active' | 'completed' | 'high-grade';

@@ -13,10 +13,18 @@ export const getCoursesByUserId = async (userId: number) => {
     throw error;
   }
 };
-
-export const getCoursesByIdSchool = async (schoolId: number) => {
+export const getCoursesByTeacherId = async (teacherId: number) => {
   try {
-    const response = await axios.get(`${url}/Course/school/${schoolId}`);
+    const response = await axios.get(`${url}/TeacherClass/byTeacher/${teacherId}`);
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching courses:', error);
+    throw error;
+  }
+};
+export const getCoursesByClassId = async (classId: number) => {
+  try {
+    const response = await axios.get(`${url}/Course/class/${classId}`);
     return response.data;
   } catch (error) {
     console.error('Error fetching courses:', error);

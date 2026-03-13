@@ -32,7 +32,7 @@ export default function QaitCoursesList() {
     materials: course.materials || 0,
     tests: course.tests || 0,
     upcomingTest: course.upcomingTest || null,
-    schoolId: course.schoolId || 0,
+    classId: course.classId || course.ClassId || 0,
   });
 
   useEffect(() => {

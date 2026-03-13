@@ -1,11 +1,21 @@
-import React, { useState } from 'react';
-import { Plus, Trash2, Save, Eye, Settings, Calendar, Clock, BookOpen, Users, Sparkles, Upload, X, FileText } from 'lucide-react';
+import React, { useEffect, useState, useContext } from 'react';
+import { Plus, Trash2, Save, Eye, Settings, Sparkles, Upload, X, FileText } from 'lucide-react';
 import { QuestionType } from '../types/questionType';
 import { addAnswerOptions, addQuestion as addQuestionApi } from '../services/question.service';
 import { AnswerOptionsType } from '../types/answerOptionsType';
 import { getAiQuizzes } from '../services/quiz.service';
+import { getCoursesByUserId } from '../services/course.service';
+import { getChaptersByCourseId } from '../services/chapter.service';
+import { AuthContext } from '../context/AuthContext';
 
 const QaitCreateTest = () => {
+  const { user } = useContext(AuthContext);
+  
+  const [courses, setCourses] = useState<any[]>([]);
+  const [chapters, setChapters] = useState<any[]>([]);
+  const [selectedCourse, setSelectedCourse] = useState<number | null>(null);
+  const [selectedChapter, setSelectedChapter] = useState<number | null>(null);
+  
   const [testData, setTestData] = useState({
     title: '',
     subject: '',
@@ -27,7 +37,7 @@ const QaitCreateTest = () => {
       points: 1
     }
   ]);
-
+  
   const [showAiPanel, setShowAiPanel] = useState(false);
   const [aiFiles, setAiFiles] = useState([]);
   const [aiInstructions, setAiInstructions] = useState('');
@@ -35,10 +45,54 @@ const QaitCreateTest = () => {
   const [aiDifficulty, setAiDifficulty] = useState('מעורב');
   const [isGenerating, setIsGenerating] = useState(false);
 
-  const subjects = ['מתמטיקה', 'אנגלית', 'עברית', 'ביולוגיה', 'פיזיקה', 'כימיה', 'היסטוריה', 'ספרות'];
+  useEffect(() => {
+    const loadCourses = async () => {
+      if (user?.userId) {
+        try {
+          const coursesData = await getCoursesByUserId(user.userId);
+          setCourses(coursesData || []);
+        } catch (error) {
+          console.error('Error loading courses:', error);
+        }
+      }
+    };
+    loadCourses();
+  }, [user]);
+
+  useEffect(() => {
+    const loadChapters = async () => {
+      if (selectedCourse) {
+        try {
+          const chaptersData = await getChaptersByCourseId(selectedCourse);
+          setChapters(chaptersData || []);
+        } catch (error) {
+          console.error('Error loading chapters:', error);
+        }
+      } else {
+        setChapters([]);
+        setSelectedChapter(null);
+      }
+    };
+    loadChapters();
+  }, [selectedCourse]);
+
+  const handleCourseChange = (courseId: number) => {
+    setSelectedCourse(courseId);
+    const course = courses.find(c => c.courseId === courseId || c.CourseId === courseId);
+    if (course) {
+      setTestData(prev => ({ 
+        ...prev, 
+        subject: course.courseName || course.CourseName || '' 
+      }));
+    }
+  };
+
+  const handleChapterChange = (chapterId: number) => {
+    setSelectedChapter(chapterId);
+  };
 
   // פונקציה לייצור שאלות באמצעות AI
-const generateQuestionsWithAI = async () => {
+  const generateQuestionsWithAI = async () => {
     if (aiFiles.length === 0) {
       alert("אנא העלה קובץ תחילה");
       return;
@@ -62,7 +116,7 @@ const generateQuestionsWithAI = async () => {
       const charToIndex: Record<string, number> = { 'A': 0, 'B': 1, 'C': 2, 'D': 3 };
 
       const aiGeneratedQuestions = response.questions.map((aiQ: any, index: number) => ({
-        id: Date.now() + index, // שימוש ב-timestamp למניעת כפילויות ID
+        id: Date.now() + index,
         question: aiQ.questionText,
         answers: aiQ.options.map((opt: any) => opt.optionText),
         correctAnswer: charToIndex[aiQ.correctAnswerId] || 0,
@@ -89,6 +143,17 @@ const generateQuestionsWithAI = async () => {
   };
 
   const saveTest = async () => {
+    if (!selectedChapter) {
+      alert('יש לבחור פרק לפני שמירת המבחן');
+      return;
+    }
+
+    const validQuestions = questions.filter((q) => q.question.trim().length > 0);
+    if (validQuestions.length === 0) {
+      alert('יש להוסיף לפחות שאלה אחת');
+      return;
+    }
+
     try {
       const difficultyToLevel: Record<string, 1 | 2 | 3> = {
         'קל': 1,
@@ -96,14 +161,12 @@ const generateQuestionsWithAI = async () => {
         'קשה': 3,
       };
 
-      const validQuestions = questions.filter((q) => q.question.trim().length > 0);
-
       for (const questionItem of validQuestions) {
         const questionPayload: QuestionType = {
           QuestionId: 0,
           Questions: questionItem.question,
           Level: difficultyToLevel[questionItem.difficulty] ?? 2,
-          ChapterId: 1,
+          ChapterId: selectedChapter,
         };
 
         const createdQuestion = await addQuestionApi(questionPayload);
@@ -127,7 +190,29 @@ const generateQuestionsWithAI = async () => {
         }
       }
 
-      alert('המבחן נשמר בהצלחה');
+      alert('המבחן נשמר בהצלחה!');
+      // Reset form
+      setQuestions([{
+        id: 1,
+        question: '',
+        answers: ['', '', '', ''],
+        correctAnswer: 0,
+        difficulty: 'בינוני',
+        points: 1
+      }]);
+      setTestData({
+        title: '',
+        subject: '',
+        description: '',
+        duration: 45,
+        scheduledDate: '',
+        scheduledTime: '',
+        classes: [],
+        passingGrade: 60
+      });
+      setSelectedCourse(null);
+      setSelectedChapter(null);
+      setChapters([]);
     } catch (error) {
       console.error('Failed saving test', error);
       alert('שמירת המבחן נכשלה');
@@ -183,7 +268,6 @@ const generateQuestionsWithAI = async () => {
           <p style={styles.subtitle}>צור מבחן מותאם אישית לתלמידים שלך</p>
         </div>
         <div style={styles.headerActions}>
-          <button style={styles.previewButton}><Eye size={18} /> תצוגה מקדימה</button>
           <button style={styles.saveButton} onClick={saveTest}><Save size={18} /> שמור מבחן</button>
         </div>
       </div>
@@ -194,15 +278,45 @@ const generateQuestionsWithAI = async () => {
             <h3 style={styles.sidebarTitle}><Settings size={20} /> הגדרות מבחן</h3>
             <div style={styles.formGroup}>
               <label style={styles.label}>שם המבחן</label>
-              <input type="text" value={testData.title} onChange={(e) => setTestData({...testData, title: e.target.value})} style={styles.input} />
+              <input type="text" value={testData.title} onChange={(e) => setTestData({...testData, title: e.target.value})} style={styles.input} placeholder="הזן שם למבחן" />
             </div>
+            
             <div style={styles.formGroup}>
               <label style={styles.label}>קורס</label>
-              <select value={testData.subject} onChange={(e) => setTestData({...testData, subject: e.target.value})} style={styles.select}>
+              <select 
+                value={selectedCourse || ''} 
+                onChange={(e) => handleCourseChange(Number(e.target.value))} 
+                style={styles.select}
+              >
                 <option value="">בחר קורס</option>
-                {subjects.map(s => <option key={s} value={s}>{s}</option>)}
+                {courses.map(course => (
+                  <option key={course.courseId || course.CourseId} value={course.courseId || course.CourseId}>
+                    {course.courseName || course.CourseName}
+                  </option>
+                ))}
               </select>
             </div>
+
+            <div style={styles.formGroup}>
+              <label style={styles.label}>פרק</label>
+              <select 
+                value={selectedChapter || ''} 
+                onChange={(e) => handleChapterChange(Number(e.target.value))}
+                style={styles.select}
+                disabled={!selectedCourse}
+              >
+                <option value="">בחר פרק</option>
+                {chapters.map(chapter => (
+                  <option key={chapter.chapterId || chapter.ChapterId} value={chapter.chapterId || chapter.ChapterId}>
+                    {chapter.name || chapter.Name}
+                  </option>
+                ))}
+              </select>
+              {selectedCourse && chapters.length === 0 && (
+                <p style={styles.noChapters}>אין פרקים בקורס זה</p>
+              )}
+            </div>
+
             <div style={styles.formGroup}>
               <label style={styles.label}>משך זמן (דקות)</label>
               <input type="number" value={testData.duration} onChange={(e) => setTestData({...testData, duration: Number(e.target.value)})} style={styles.input} />
@@ -211,8 +325,11 @@ const generateQuestionsWithAI = async () => {
 
           <div style={styles.summaryCard}>
             <h4 style={styles.summaryTitle}>סיכום</h4>
-            <div style={styles.summaryItem}><span>שאלות:</span><span style={styles.summaryValue}>{questions.length}</span></div>
+            <div style={styles.summaryItem}><span>שאלות:</span><span style={styles.summaryValue}>{questions.filter(q => q.question.trim()).length}</span></div>
             <div style={styles.summaryItem}><span>נקודות:</span><span style={styles.summaryValue}>{totalPoints}</span></div>
+            {selectedChapter && (
+              <div style={styles.summaryItem}><span>פרק:</span><span style={styles.summaryValueSelected}>נבחר ✓</span></div>
+            )}
           </div>
         </div>
 
@@ -289,10 +406,33 @@ const generateQuestionsWithAI = async () => {
                   <div style={styles.answersSection}>
                     {q.answers.map((ans, i) => (
                       <div key={i} style={styles.answerRow}>
-                        <input type="radio" checked={q.correctAnswer === i} onChange={() => updateQuestion(q.id, 'correctAnswer', i)} />
-                        <input type="text" value={ans} onChange={(e) => updateAnswer(q.id, i, e.target.value)} style={styles.answerInput} placeholder={`תשובה ${i+1}`} />
+                        <input 
+                          type="radio" 
+                          checked={q.correctAnswer === i} 
+                          onChange={() => updateQuestion(q.id, 'correctAnswer', i)} 
+                          name={`correct-${q.id}`}
+                        />
+                        <input 
+                          type="text" 
+                          value={ans} 
+                          onChange={(e) => updateAnswer(q.id, i, e.target.value)} 
+                          style={styles.answerInput} 
+                          placeholder={`תשובה ${i+1}`} 
+                        />
                       </div>
                     ))}
+                  </div>
+                  <div style={styles.difficultyRow}>
+                    <label style={styles.difficultyLabel}>רמת קושי:</label>
+                    <select 
+                      value={q.difficulty}
+                      onChange={(e) => updateQuestion(q.id, 'difficulty', e.target.value)}
+                      style={styles.difficultySelect}
+                    >
+                      <option value="קל">קל</option>
+                      <option value="בינוני">בינוני</option>
+                      <option value="קשה">קשה</option>
+                    </select>
                   </div>
                 </div>
               </div>
@@ -304,7 +444,6 @@ const generateQuestionsWithAI = async () => {
   );
 };
 
-// Styles object (נשאר כפי שהיה במקור שלך)
 const styles = {
   container: { height: '100vh', overflowY: 'auto', padding: '32px', backgroundColor: '#f9fafb', minHeight: '100vh', fontFamily: 'Assistant, sans-serif' },
   header: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px' },
@@ -321,11 +460,12 @@ const styles = {
   label: { display: 'block', fontSize: '14px', fontWeight: '600', color: '#374151', marginBottom: '8px' },
   input: { width: '100%', padding: '10px 12px', border: '2px solid #e5e7eb', borderRadius: '8px', fontSize: '14px', outline: 'none' },
   select: { width: '100%', padding: '10px 12px', border: '2px solid #e5e7eb', borderRadius: '8px', fontSize: '14px', backgroundColor: 'white' },
-  textarea: { width: '100%', padding: '10px 12px', border: '2px solid #e5e7eb', borderRadius: '8px', fontSize: '14px', outline: 'none', resize: 'vertical' },
+  textarea: { width: '100%', padding: '10px 12px', border: '2px solid #e5e7eb', borderRadius: '8px', fontSize: '14px', outline: 'none', resize: 'vertical', minHeight: '80px' },
   summaryCard: { backgroundColor: 'white', padding: '20px', borderRadius: '12px', boxShadow: '0 1px 3px rgba(0,0,0,0.1)' },
   summaryTitle: { fontSize: '16px', fontWeight: 'bold', color: '#1f2937', marginBottom: '16px' },
   summaryItem: { display: 'flex', justifyContent: 'space-between', padding: '10px 0', borderBottom: '1px solid #e5e7eb' },
   summaryValue: { fontWeight: 'bold', color: '#14b8a6' },
+  summaryValueSelected: { fontWeight: 'bold', color: '#22c55e' },
   questionsContainer: { display: 'flex', flexDirection: 'column', gap: '16px' },
   questionsHeader: { display: 'flex', justifyContent: 'space-between', alignItems: 'center' },
   questionsTitle: { fontSize: '24px', fontWeight: 'bold', color: '#1f2937' },
@@ -340,6 +480,9 @@ const styles = {
   answersSection: { display: 'flex', flexDirection: 'column', gap: '8px' },
   answerRow: { display: 'flex', alignItems: 'center', gap: '12px' },
   answerInput: { flex: 1, padding: '10px 12px', border: '2px solid #e5e7eb', borderRadius: '8px' },
+  difficultyRow: { display: 'flex', alignItems: 'center', gap: '12px', marginTop: '8px' },
+  difficultyLabel: { fontSize: '14px', color: '#6b7280' },
+  difficultySelect: { padding: '8px 12px', border: '2px solid #e5e7eb', borderRadius: '8px', fontSize: '14px' },
   aiPanel: { backgroundColor: '#faf5ff', border: '2px solid #e9d5ff', borderRadius: '12px', padding: '24px', marginBottom: '24px' },
   aiPanelHeader: { display: 'flex', justifyContent: 'space-between', marginBottom: '24px' },
   aiPanelTitle: { display: 'flex', gap: '16px' },
@@ -352,7 +495,8 @@ const styles = {
   fileName: { flex: 1, fontSize: '14px' },
   removeFileButton: { color: '#ef4444', border: 'none', background: 'none', cursor: 'pointer' },
   generateButton: { display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', padding: '14px 24px', background: 'linear-gradient(90deg, #8b5cf6 0%, #a78bfa 100%)', border: 'none', borderRadius: '8px', color: 'white', fontSize: '16px', fontWeight: '600', cursor: 'pointer', width: '100%', marginTop: '16px' },
-  closeButton: { background: 'none', border: 'none', cursor: 'pointer', color: '#6b7280' }
+  closeButton: { background: 'none', border: 'none', cursor: 'pointer', color: '#6b7280' },
+  noChapters: { fontSize: '12px', color: '#ef4444', marginTop: '4px' }
 };
 
 export default QaitCreateTest;
