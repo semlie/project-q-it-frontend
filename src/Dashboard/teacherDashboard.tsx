@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Home, Users, FileEdit, BarChart3, Settings, Clock, CheckCircle, TrendingUp, BookOpen, Bell } from 'lucide-react';
+import { Home, FileEdit, BarChart3, Settings, Clock, CheckCircle, BookOpen, Bell } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router';
 import { Paths } from '../routes/paths';
@@ -8,9 +8,8 @@ import './dashboard.css';
 import DashboardSidebar from './components/DashboardSidebar';
 import DashboardTopBar from './components/DashboardTopBar';
 import UserInfoCard from './components/UserInfoCard';
-import StatsGrid from './components/StatsGrid';
-import { DashboardStatItem, DashboardTabItem } from './components/types';
-import { getCoursesByTeacherId } from '../services/course.service';
+import { DashboardTabItem } from './components/types';
+import { getCoursesByUserId } from '../services/course.service';
 import { Course } from '../Courses/components/types';
 
 export default function QaitTeacherDashboard() {
@@ -44,11 +43,32 @@ export default function QaitTeacherDashboard() {
     const loadCourses = async () => {
       if (!user?.userId) return;
       try {
-        const data = await getCoursesByTeacherId(user.userId);
-        setMyClasses(Array.isArray(data) ? data : []);
+        const data = await getCoursesByUserId(user.userId);
+        if (Array.isArray(data)) {
+          const normalizedCourses: Course[] = data.map((course: any) => ({
+            id: course.courseId || course.id || 0,
+            name: course.courseName || course.name || 'ללא שם',
+            teacher: course.teacherName || user.userName || 'לא צוין',
+            description: course.description || '',
+            color: course.color || '#14b8a6',
+            icon: course.icon || '📚',
+            progress: course.progress || 0,
+            chapters: course.chapters || 0,
+            completedChapters: course.completedChapters || 0,
+            students: course.students || 0,
+            averageGrade: course.averageGrade || 0,
+            materials: course.materials || 0,
+            tests: course.tests || 0,
+            upcomingTest: course.upcomingTest || null,
+            classId: course.classId || course.ClassId || 0,
+          }));
+          setCourses(normalizedCourses);
+        } else {
+          setCourses([]);
+        }
       } catch (err) {
         console.error('Failed loading teacher courses:', err);
-        setMyClasses([]);
+        setCourses([]);
       }
     };
 
@@ -61,8 +81,6 @@ export default function QaitTeacherDashboard() {
     avatar: user?.userName ? user.userName.substring(0, 2).toUpperCase() : "MT"
   };
 
-  const [myClasses, setMyClasses] = useState<Course[]>([]);
-
   const upcomingTests = [
     { id: 1, className: "כיתה י'1", title: "מבחן באלגברה", date: "מחר, 10:00", questions: 25, duration: "45 דקות" },
     { id: 2, className: "כיתה י'2", title: "מבחן Unit 5", date: "15/03/2026", questions: 30, duration: "60 דקות" },
@@ -74,14 +92,6 @@ export default function QaitTeacherDashboard() {
     { id: 2, type: "submission", className: "כיתה י'2", title: "5 תלמידים הגישו מטלה", date: "לפני 3 שעות", icon: <BookOpen size={20} /> },
     { id: 3, type: "question", className: "כיתה יא'3", title: "שאלה חדשה מתלמיד", date: "לפני יום", icon: <Bell size={20} /> }
   ];
-
-  const stats = [
-    { label: "סה״כ תלמידים", value: "75", icon: <Users size={24} />, color: "#10b981" },
-    { label: "מבחנים פעילים", value: "8", icon: <FileEdit size={24} />, color: "#06b6d4" },
-    { label: "ממוצע כיתות", value: "86.7", icon: <TrendingUp size={24} />, color: "#f59e0b" },
-    { label: "מבחנים השבוע", value: "3", icon: <Clock size={24} />, color: "#8b5cf6" }
-  ] as DashboardStatItem[];
-
   const navItems: DashboardTabItem[] = [
     { id: 'home', label: 'דף הבית', icon: <Home size={20} /> },
     { id: 'classes', label: 'הקורסים שלי', icon: <BookOpen size={20} /> },
@@ -94,7 +104,6 @@ export default function QaitTeacherDashboard() {
     { label: 'שם מלא', value: user?.userName || 'לא זמין' },
     { label: 'אימייל', value: user?.userEmail || 'לא זמין' },
     { label: 'תפקיד', value: '👨‍🏫 מורה' },
-    { label: 'מזהה משתמש', value: user?.userId || 'לא זמין' },
     { label: 'מזהה כיתה', value: user?.classId || 'לא זמין' },
   ];
 
@@ -142,7 +151,7 @@ export default function QaitTeacherDashboard() {
               
               <div className="dashboard-section" style={{ marginTop: '24px' }}>
                 <div className="tests-list">
-                  {myClasses.map((course) => {
+                  {courses.map((course) => {
                     const courseName = (course as any).courseName || (course as any).name || 'קורס';
                     const courseSubject = (course as any).description || 'קורס';
                     const nextClass = (course as any).nextClass || '';
@@ -179,8 +188,6 @@ export default function QaitTeacherDashboard() {
           ) : (
             <>
               <h1 className="welcome-title">שלום, {userData.name}! 👋</h1>
-              <p className="welcome-subtitle">סקירה מהירה של הפעילות בכיתות שלך</p>
-
               <UserInfoCard
                 title="פרטי מורה"
                 avatarText={userData.avatar}
@@ -188,75 +195,6 @@ export default function QaitTeacherDashboard() {
                 userImageUrl={user?.userImageUrl}
                 rows={userInfoRows}
               />
-
-              <StatsGrid stats={stats} />
-
-          {/* Two Column Layout */}
-          <div className="two-column-grid">
-            {/* Upcoming Tests */}
-            <div className="dashboard-section">
-              <div className="section-header">
-                <h2 className="section-title">מבחנים קרובים</h2>
-                <button className="see-all-button">צפה בהכל</button>
-              </div>
-
-              <div className="tests-list">
-                {upcomingTests.map(test => (
-                  <div key={test.id} className="test-card">
-                    <div className="test-card-header">
-                      <div className="test-subject">{test.className}</div>
-                      <div className="test-date">
-                        <Clock size={16} />
-                        {test.date}
-                      </div>
-                    </div>
-                    <h3 className="test-title">{test.title}</h3>
-                    <div className="test-details">
-                      <span>{test.questions} שאלות</span>
-                      <span>•</span>
-                      <span>{test.duration}</span>
-                    </div>
-                    <button className="start-test-button">נהל מבחן</button>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Recent Activity */}
-            <div className="dashboard-section">
-              <div className="section-header">
-                <h2 className="section-title">פעילות אחרונה</h2>
-                <button className="see-all-button">צפה בהכל</button>
-              </div>
-
-              <div className="results-list">
-                {recentActivity.map(activity => (
-                  <div key={activity.id} className="result-card">
-                    <div className="result-header">
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                        <div style={{ 
-                          padding: '8px', 
-                          borderRadius: '8px', 
-                          backgroundColor: '#f1f5f9',
-                          color: '#6366f1',
-                          display: 'flex'
-                        }}>
-                          {activity.icon}
-                        </div>
-                        <div>
-                          <div className="result-subject">{activity.className}</div>
-                          <div className="result-title">{activity.title}</div>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="result-footer">
-                      <div className="result-date">{activity.date}</div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
             </>
           )}
         </div>
