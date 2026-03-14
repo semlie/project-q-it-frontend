@@ -13,6 +13,7 @@ import { LoginPage } from '../login/login';
 import { ProtectedRoute } from './ProtectedRoute.tsx';
 import { RoleBasedRoute } from './RoleBasedRoute.tsx';
 import TakeTest from '../TakeTest/TakeTest';
+import QaitAddCourse from '../AddCourse/AddCourse';
 
 const Routes = () => {
   const router = createBrowserRouter([
@@ -57,6 +58,16 @@ const Routes = () => {
       element: (
         <ProtectedRoute>
           <QaitCreateTest />
+        </ProtectedRoute>
+      ),
+    },
+    {
+      path: Paths.addCourse,
+      element: (
+        <ProtectedRoute>
+          <RoleBasedRoute allowedRoles={['teacher']}>
+            <QaitAddCourse />
+          </RoleBasedRoute>
         </ProtectedRoute>
       ),
     },

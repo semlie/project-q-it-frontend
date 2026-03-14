@@ -60,7 +60,7 @@ export default function QaitTeacherDashboard() {
             materials: course.materials || 0,
             tests: course.tests || 0,
             upcomingTest: course.upcomingTest || null,
-            classId: course.classId || course.ClassId || 0,
+            schoolId: course.schoolId || course.schoolId || 0,
           }));
           setCourses(normalizedCourses);
         } else {
@@ -80,18 +80,6 @@ export default function QaitTeacherDashboard() {
     role: 'מורה',
     avatar: user?.userName ? user.userName.substring(0, 2).toUpperCase() : "MT"
   };
-
-  const upcomingTests = [
-    { id: 1, className: "כיתה י'1", title: "מבחן באלגברה", date: "מחר, 10:00", questions: 25, duration: "45 דקות" },
-    { id: 2, className: "כיתה י'2", title: "מבחן Unit 5", date: "15/03/2026", questions: 30, duration: "60 דקות" },
-    { id: 3, className: "כיתה יא'3", title: "מבחן טריגונומטריה", date: "20/03/2026", questions: 20, duration: "40 דקות" }
-  ];
-
-  const recentActivity = [
-    { id: 1, type: "grade", className: "כיתה י'1", title: "ציונים למבחן אלגברה עודכנו", date: "לפני שעה", icon: <CheckCircle size={20} /> },
-    { id: 2, type: "submission", className: "כיתה י'2", title: "5 תלמידים הגישו מטלה", date: "לפני 3 שעות", icon: <BookOpen size={20} /> },
-    { id: 3, type: "question", className: "כיתה יא'3", title: "שאלה חדשה מתלמיד", date: "לפני יום", icon: <Bell size={20} /> }
-  ];
   const navItems: DashboardTabItem[] = [
     { id: 'home', label: 'דף הבית', icon: <Home size={20} /> },
     { id: 'classes', label: 'הקורסים שלי', icon: <BookOpen size={20} /> },
@@ -149,17 +137,32 @@ export default function QaitTeacherDashboard() {
               <h1 className="welcome-title">הקורסים שלי</h1>
               <p className="welcome-subtitle">נהל את כל הקורסים שלך</p>
               
+              <button 
+                onClick={() => navigate(`/${Paths.addCourse}`)}
+                style={{
+                  marginTop: '16px',
+                  padding: '10px 20px',
+                  backgroundColor: '#10b981',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '8px',
+                  cursor: 'pointer',
+                  fontSize: '14px',
+                  fontWeight: '500'
+                }}
+              >
+                + הוסף קורס חדש
+              </button>
+              
               <div className="dashboard-section" style={{ marginTop: '24px' }}>
                 <div className="tests-list">
                   {courses.map((course) => {
                     const courseName = (course as any).courseName || (course as any).name || 'קורס';
-                    const courseSubject = (course as any).description || 'קורס';
                     const nextClass = (course as any).nextClass || '';
 
                     return (
                       <div key={(course as any).courseId || (course as any).id} className="test-card">
                         <div className="test-card-header">
-                          <div className="test-subject">{courseSubject}</div>
                           {nextClass && (
                             <div className="test-date">
                               <Clock size={16} />
@@ -169,11 +172,8 @@ export default function QaitTeacherDashboard() {
                         </div>
                         <h3 className="test-title">{courseName}</h3>
                         <div className="test-details">
-                          <span>{(course as any).students ?? '–'} תלמידים</span>
-                          <span>•</span>
-                          <span>ממוצע: {(course as any).averageGrade ?? '–'}</span>
                         </div>
-                        <button className="start-test-button">צפה בכיתה</button>
+                        <button className="start-test-button">צפה בקורס</button>
                       </div>
                     );
                   })}

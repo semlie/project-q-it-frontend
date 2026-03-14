@@ -9,6 +9,7 @@ export const Paths = {
   teacherStats: 'teacher-stats',
   CoursesList : 'courses-list',
   createTest: 'create-test',
+  addCourse: 'add-course',
   courseDetails: 'courses/:courseId',
   courseChapter: 'courses/:courseId/chapters/:chapterId',
   takeTest: 'test/:chapterId/:level',

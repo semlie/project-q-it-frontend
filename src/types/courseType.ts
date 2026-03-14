@@ -5,4 +5,6 @@ export type CourseType = {
   CourseName?: string;
   classId?: number;
   ClassId?: number;
+  schoolId?: number;
+  SchoolId?: number;
 };
