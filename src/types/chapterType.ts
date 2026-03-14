@@ -1,5 +1,5 @@
 export type ChapterType = {
-  chapterId: number;
-  name: string;
-  coursId: number;
+  chapterId?: number;
+  name?: string;
+  courseId?: number;
 };

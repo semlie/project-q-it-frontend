@@ -153,7 +153,6 @@ export default function QaitTeacherDashboard() {
               >
                 + הוסף קורס חדש
               </button>
-              
               <div className="dashboard-section" style={{ marginTop: '24px' }}>
                 <div className="tests-list">
                   {courses.map((course) => {
@@ -173,7 +172,12 @@ export default function QaitTeacherDashboard() {
                         <h3 className="test-title">{courseName}</h3>
                         <div className="test-details">
                         </div>
-                        <button className="start-test-button">צפה בקורס</button>
+                        <button 
+                          className="start-test-button"
+                          onClick={() => navigate(`/${Paths.courseDetails.replace(':courseId', String((course as any).courseId || (course as any).id))}`)}
+                        >
+                          צפה בקורס
+                        </button>
                       </div>
                     );
                   })}

@@ -1,12 +1,13 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useLocation, useNavigate, useParams } from 'react-router';
-import { ArrowRight, BookOpen, Clock, Download, FileText, GraduationCap, ListChecks, Search, Trophy, Users } from 'lucide-react';
+import { ArrowRight, BookOpen, Clock, Download, FileText, GraduationCap, ListChecks, Search, Trophy, Users, Plus, Upload, X } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { getCoursesByUserId} from '../services/course.service';
 import { Course } from './components/types';
 import { Paths } from '../routes/paths';
-import { getChaptersByCourseId } from '../services/chapter.service';
-import { getMaterialsByIdCourse } from '../services/materials.service';
+import { getChaptersByCourseId, addChapter } from '../services/chapter.service';
+import { getMaterialsByIdCourse, addMaterial } from '../services/materials.service';
+import axios from '../services/axios';
 import './courseDetails.css';
 
 interface ChapterItem {
@@ -141,6 +142,18 @@ export default function QaitCourseDetailsPage() {
   const [chapterQuery, setChapterQuery] = useState('');
   const [chapterFilter, setChapterFilter] = useState<'all' | 'completed' | 'open'>('all');
   const [activeView, setActiveView] = useState<'chapters' | 'materials'>('chapters');
+  
+  const isTeacher = user?.role === 'teacher';
+  
+  const [showAddChapter, setShowAddChapter] = useState(false);
+  const [newChapterName, setNewChapterName] = useState('');
+  const [addingChapter, setAddingChapter] = useState(false);
+  
+  const [showAddMaterial, setShowAddMaterial] = useState(false);
+  const [newMaterialName, setNewMaterialName] = useState('');
+  const [newMaterialDesc, setNewMaterialDesc] = useState('');
+  const [newMaterialFile, setNewMaterialFile] = useState<File | null>(null);
+  const [addingMaterial, setAddingMaterial] = useState(false);
 
   useEffect(() => {
     const loadCourse = async () => {
@@ -239,6 +252,62 @@ export default function QaitCourseDetailsPage() {
       return matchesQuery && matchesFilter;
     });
   }, [chapters, chapterFilter, chapterQuery]);
+
+  const handleAddChapter = async () => {
+    if (!newChapterName.trim() || !course?.id) return;
+    
+    setAddingChapter(true);
+    try {
+      await addChapter({
+        chapterId: 0,
+        name: newChapterName,
+        courseId: course.id
+      });
+      setNewChapterName('');
+      setShowAddChapter(false);
+      const updatedChapters = await getChaptersByCourseId(course.id);
+      if (Array.isArray(updatedChapters)) {
+        setChapters(updatedChapters.map((item: any, index: number) => ({
+          id: item.chapterId || item.id || index + 1,
+          title: item.chapterName || item.name || item.title || `פרק ${index + 1}`,
+          isCompleted: false
+        })));
+      }
+    } catch (err) {
+      console.error('Error adding chapter:', err);
+    } finally {
+      setAddingChapter(false);
+    }
+  };
+
+  const handleAddMaterial = async () => {
+    if (!newMaterialName.trim() || !course?.id || !newMaterialFile) return;
+    
+    setAddingMaterial(true);
+    try {
+      const formData = new FormData();
+      formData.append('MatName', newMaterialName);
+      formData.append('MatDescription', newMaterialDesc);
+      formData.append('CourseId', String(course.id));
+      formData.append('FileMaterial', newMaterialFile);
+      
+      await axios.post('/api/Materials', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+      
+      setNewMaterialName('');
+      setNewMaterialDesc('');
+      setNewMaterialFile(null);
+      setShowAddMaterial(false);
+      
+      const updatedMaterials = await getMaterialsByIdCourse(course.id);
+      setMaterialsSource(updatedMaterials);
+    } catch (err) {
+      console.error('Error adding material:', err);
+    } finally {
+      setAddingMaterial(false);
+    }
+  };
 
   if (loading) {
     return (
@@ -348,9 +417,30 @@ export default function QaitCourseDetailsPage() {
 
         {activeView === 'materials' && (
           <div className="qcd-section-card">
-            <h2 className="qcd-section-title">
-              <FileText size={24} /> חומרים שהמרצה העלה
-            </h2>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+              <h2 className="qcd-section-title">
+                <FileText size={24} /> חומרים שהמרצה העלה
+              </h2>
+              {isTeacher && (
+                <button
+                  onClick={() => setShowAddMaterial(true)}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px',
+                    padding: '8px 16px',
+                    backgroundColor: '#10b981',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '6px',
+                    cursor: 'pointer',
+                    fontSize: '14px'
+                  }}
+                >
+                  <Upload size={16} /> העלה חומר
+                </button>
+              )}
+            </div>
             <p className="qcd-section-subtitle">כל החומרים הזמינים לקורס זה</p>
 
             <div className="qcd-materials-list">
@@ -387,9 +477,30 @@ export default function QaitCourseDetailsPage() {
             <div className="qcd-section-spacer" />
 
             <div className="qcd-section-card">
-              <h2 className="qcd-section-title">
-                <BookOpen size={24} /> כל פרקי הקורס
-              </h2>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+                <h2 className="qcd-section-title">
+                  <BookOpen size={24} /> כל פרקי הקורס
+                </h2>
+                {isTeacher && (
+                  <button
+                    onClick={() => setShowAddChapter(true)}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '6px',
+                      padding: '8px 16px',
+                      backgroundColor: '#10b981',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '6px',
+                      cursor: 'pointer',
+                      fontSize: '14px'
+                    }}
+                  >
+                    <Plus size={16} /> הוסף פרק
+                  </button>
+                )}
+              </div>
               <p className="qcd-section-subtitle">רשימת הפרקים לפי סדר הלמידה</p>
               <div className="qcd-chapter-controls">
                 <div className="qcd-chapter-search-wrap">
@@ -444,6 +555,116 @@ export default function QaitCourseDetailsPage() {
               </div>
             </div>
           </>
+        )}
+        
+        {showAddChapter && (
+          <div style={{
+            position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+            backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000
+          }}>
+            <div style={{
+              backgroundColor: 'white', borderRadius: '12px', padding: '24px', width: '400px', maxWidth: '90%'
+            }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+                <h3 style={{ margin: 0, fontSize: '18px' }}>הוסף פרק חדש</h3>
+                <button onClick={() => setShowAddChapter(false)} style={{ background: 'none', border: 'none', cursor: 'pointer' }}>
+                  <X size={20} />
+                </button>
+              </div>
+              <div style={{ marginBottom: '16px' }}>
+                <label style={{ display: 'block', marginBottom: '6px', fontSize: '14px', fontWeight: 500 }}>שם הפרק</label>
+                <input
+                  type="text"
+                  value={newChapterName}
+                  onChange={(e) => setNewChapterName(e.target.value)}
+                  placeholder="לדוגמה: פרק 1 - מבוא"
+                  style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #e2e8f0', fontSize: '14px' }}
+                />
+              </div>
+              <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
+                <button
+                  onClick={() => setShowAddChapter(false)}
+                  style={{ padding: '10px 20px', borderRadius: '6px', border: '1px solid #e2e8f0', background: 'white', cursor: 'pointer' }}
+                >
+                  ביטול
+                </button>
+                <button
+                  onClick={handleAddChapter}
+                  disabled={addingChapter || !newChapterName.trim()}
+                  style={{
+                    padding: '10px 20px', borderRadius: '6px', border: 'none', background: '#10b981', color: 'white',
+                    cursor: addingChapter || !newChapterName.trim() ? 'not-allowed' : 'pointer', opacity: addingChapter || !newChapterName.trim() ? 0.6 : 1
+                  }}
+                >
+                  {addingChapter ? 'מוסיף...' : 'הוסף'}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+        
+        {showAddMaterial && (
+          <div style={{
+            position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+            backgroundColor: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000
+          }}>
+            <div style={{
+              backgroundColor: 'white', borderRadius: '12px', padding: '24px', width: '400px', maxWidth: '90%'
+            }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+                <h3 style={{ margin: 0, fontSize: '18px' }}>העלה חומר לימוד</h3>
+                <button onClick={() => setShowAddMaterial(false)} style={{ background: 'none', border: 'none', cursor: 'pointer' }}>
+                  <X size={20} />
+                </button>
+              </div>
+              <div style={{ marginBottom: '16px' }}>
+                <label style={{ display: 'block', marginBottom: '6px', fontSize: '14px', fontWeight: 500 }}>שם החומר</label>
+                <input
+                  type="text"
+                  value={newMaterialName}
+                  onChange={(e) => setNewMaterialName(e.target.value)}
+                  placeholder="לדוגמה: דף עבודה 1"
+                  style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #e2e8f0', fontSize: '14px' }}
+                />
+              </div>
+              <div style={{ marginBottom: '16px' }}>
+                <label style={{ display: 'block', marginBottom: '6px', fontSize: '14px', fontWeight: 500 }}>תיאור</label>
+                <textarea
+                  value={newMaterialDesc}
+                  onChange={(e) => setNewMaterialDesc(e.target.value)}
+                  placeholder="תיאור אופציונלי..."
+                  rows={3}
+                  style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #e2e8f0', fontSize: '14px', resize: 'vertical' }}
+                />
+              </div>
+              <div style={{ marginBottom: '20px' }}>
+                <label style={{ display: 'block', marginBottom: '6px', fontSize: '14px', fontWeight: 500 }}>קובץ</label>
+                <input
+                  type="file"
+                  onChange={(e) => setNewMaterialFile(e.target.files?.[0] || null)}
+                  style={{ width: '100%', padding: '10px', borderRadius: '6px', border: '1px solid #e2e8f0', fontSize: '14px' }}
+                />
+              </div>
+              <div style={{ display: 'flex', gap: '12px', justifyContent: 'flex-end' }}>
+                <button
+                  onClick={() => setShowAddMaterial(false)}
+                  style={{ padding: '10px 20px', borderRadius: '6px', border: '1px solid #e2e8f0', background: 'white', cursor: 'pointer' }}
+                >
+                  ביטול
+                </button>
+                <button
+                  onClick={handleAddMaterial}
+                  disabled={addingMaterial || !newMaterialName.trim() || !newMaterialFile}
+                  style={{
+                    padding: '10px 20px', borderRadius: '6px', border: 'none', background: '#10b981', color: 'white',
+                    cursor: addingMaterial || !newMaterialName.trim() || !newMaterialFile ? 'not-allowed' : 'pointer', opacity: addingMaterial || !newMaterialName.trim() || !newMaterialFile ? 0.6 : 1
+                  }}
+                >
+                  {addingMaterial ? 'מעלה...' : 'העלה'}
+                </button>
+              </div>
+            </div>
+          </div>
         )}
       </div>
     </div>
