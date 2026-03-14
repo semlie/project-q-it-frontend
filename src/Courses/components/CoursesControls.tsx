@@ -11,8 +11,7 @@ interface CoursesControlsProps {
 
 const filterOptions: Array<{ key: CourseFilter; label: string }> = [
   { key: 'all', label: 'הכל' },
-  { key: 'active', label: 'פעילים' },
-  { key: 'high-grade', label: 'ציונים גבוהים' },
+  { key: 'active', label: 'פעילים' }
 ];
 
 export default function CoursesControls({

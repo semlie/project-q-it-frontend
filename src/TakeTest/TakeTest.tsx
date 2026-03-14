@@ -3,12 +3,10 @@ import { useParams, useNavigate } from 'react-router';
 import { getQuestionsForChapter, submitAnswer, finishTest, TestQuestion, AnswerResult } from '../services/test.service';
 import { Paths } from '../routes/paths';
 import { AuthContext } from '../context/AuthContext';
-
 const TakeTest: React.FC = () => {
   const { chapterId, level } = useParams<{ chapterId: string; level: string }>();
   const navigate = useNavigate();
-  const { user } = useContext(AuthContext);
-  
+  const {user} = useContext(AuthContext);
   const [questions, setQuestions] = useState<TestQuestion[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
@@ -19,13 +17,11 @@ const TakeTest: React.FC = () => {
   const [score, setScore] = useState(0);
   const [showResults, setShowResults] = useState(false);
   const [finalResult, setFinalResult] = useState<any>(null);
-
   const levelMap: { [key: string]: number } = {
     'קל': 1,
     'בינוני': 2,
     'קשה': 3
   };
-
   useEffect(() => {
     const loadQuestions = async () => {
       if (!chapterId) return;
@@ -46,25 +42,20 @@ const TakeTest: React.FC = () => {
     };
     loadQuestions();
   }, [chapterId, level, user]);
-
   const handleAnswerSelect = (answerId: number) => {
     if (!isAnswered) {
       setSelectedAnswer(answerId);
     }
   };
-
   const handleSubmitAnswer = async () => {
     if (selectedAnswer === null || !questions[currentIndex]) return;
-
     const userId = user?.userId;
     if (!userId) {
       alert('יש להתחבר למערכת כדי לענות על שאלות');
       return;
     }
-
     const questionId = questions[currentIndex].questionId;
     const answerId = selectedAnswer.toString();
-
     try {
       const result = await submitAnswer(userId, questionId, answerId);
       setAnswerResult(result);
@@ -77,7 +68,6 @@ const TakeTest: React.FC = () => {
       alert('שגיאה בשליחת התשובה: ' + (error.response?.data || error.message));
     }
   };
-
   const handleNext = () => {
     if (currentIndex < questions.length - 1) {
       setCurrentIndex(prev => prev + 1);
@@ -88,7 +78,6 @@ const TakeTest: React.FC = () => {
       handleFinish();
     }
   };
-
   const handleFinish = async () => {
     const userId = user?.userId;
     if (!userId) {
@@ -96,9 +85,7 @@ const TakeTest: React.FC = () => {
       return;
     }
     if (!chapterId) return;
-
-    const duration = Math.round((Date.now() - startTime) / 1000);
-    
+    const duration = Math.round((Date.now() - startTime) / 1000); 
     try {
       const result = await finishTest(userId, parseInt(chapterId), duration, score, questions.length);
       setFinalResult(result);
@@ -108,7 +95,6 @@ const TakeTest: React.FC = () => {
       alert('שגיאה בשמירת התוצאות: ' + (error.response?.data || error.message));
     }
   };
-
   const getDifficultyLabel = (level: number) => {
     switch (level) {
       case 1: return 'קל';
@@ -117,8 +103,7 @@ const TakeTest: React.FC = () => {
       default: return '';
     }
   };
-
-  const getDifficultyColor = (level: number) => {
+const getDifficultyColor = (level: number) => {
     switch (level) {
       case 1: return '#22c55e';
       case 2: return '#f59e0b';
@@ -126,9 +111,7 @@ const TakeTest: React.FC = () => {
       default: return '#6b7280';
     }
   };
-
   const currentQuestion = questions[currentIndex];
-
   if (loading || !currentQuestion) {
     return (
       <div style={styles.container} dir="rtl">
@@ -136,7 +119,6 @@ const TakeTest: React.FC = () => {
       </div>
     );
   }
-
   if (!user?.userId) {
     return (
       <div style={styles.container} dir="rtl">
@@ -152,7 +134,6 @@ const TakeTest: React.FC = () => {
       </div>
     );
   }
-
   if (questions.length === 0) {
     return (
       <div style={styles.container} dir="rtl">
@@ -160,7 +141,7 @@ const TakeTest: React.FC = () => {
           <h2>אין שאלות ברמה זו</h2>
           <button 
             style={styles.backButton}
-            onClick={() => navigate(Paths.dashboard)}
+            onClick={() => navigate(`/${Paths.dashboard}`)}
           >
             חזור לדשבורד
           </button>
@@ -168,12 +149,10 @@ const TakeTest: React.FC = () => {
       </div>
     );
   }
-
   if (showResults && finalResult) {
     const percentage = finalResult.percentage;
     let message = '';
-    let messageColor = '';
-    
+    let messageColor = ''; 
     if (percentage >= 90) {
       message = 'מצוין! כל הכבוד! 🌟';
       messageColor = '#22c55e';
@@ -187,12 +166,10 @@ const TakeTest: React.FC = () => {
       message = 'נסה שוב! 💪';
       messageColor = '#ef4444';
     }
-
     return (
       <div style={styles.container} dir="rtl">
         <div style={styles.resultsContainer}>
-          <h1 style={styles.resultsTitle}>תוצאות המבחן</h1>
-          
+          <h1 style={styles.resultsTitle}>תוצאות המבחן</h1>   
           <div style={styles.scoreCircle}>
             <span style={{...styles.scorePercentage, color: messageColor}}>
               {Math.round(percentage)}%
@@ -201,12 +178,10 @@ const TakeTest: React.FC = () => {
               {finalResult.score} / {finalResult.total}
             </span>
           </div>
-
           <p style={{...styles.resultMessage, color: messageColor}}>{message}</p>
-
           <button 
             style={styles.finishButton}
-            onClick={() => navigate(Paths.dashboard)}
+            onClick={() => navigate(`/${Paths.dashboard}`)}
           >
             סיים
           </button>
@@ -214,7 +189,6 @@ const TakeTest: React.FC = () => {
       </div>
     );
   }
-
   return (
     <div style={styles.container} dir="rtl">
       <div style={styles.header}>
@@ -234,7 +208,6 @@ const TakeTest: React.FC = () => {
           שאלה {currentIndex + 1} מתוך {questions.length}
         </div>
       </div>
-
       <main style={styles.main}>
         <div style={styles.quizContainer}>
           <div style={styles.questionHeader}>
@@ -246,14 +219,11 @@ const TakeTest: React.FC = () => {
               {getDifficultyLabel(currentQuestion.level)}
             </span>
           </div>
-
           <div style={styles.answersList}>
             {currentQuestion.answers.map((answer) => {
               const isSelected = selectedAnswer === answer.id;
-              const isCorrectAnswer = answer.isCorrect;
-              
+              const isCorrectAnswer = answer.isCorrect;   
               let answerStyle = {...styles.answerCard};
-              
               if (isAnswered) {
                 if (isCorrectAnswer) {
                   answerStyle = {...answerStyle, ...styles.answerCorrect};
@@ -263,7 +233,6 @@ const TakeTest: React.FC = () => {
               } else if (isSelected) {
                 answerStyle = {...answerStyle, ...styles.answerSelected};
               }
-
               return (
                 <div
                   key={answer.id}
@@ -283,7 +252,6 @@ const TakeTest: React.FC = () => {
               );
             })}
           </div>
-
           {isAnswered && answerResult && (
             <div style={styles.feedback}>
               <div style={{
@@ -305,7 +273,6 @@ const TakeTest: React.FC = () => {
               )}
             </div>
           )}
-
           <div style={styles.navigation}>
             {!isAnswered ? (
               <button
@@ -332,7 +299,6 @@ const TakeTest: React.FC = () => {
     </div>
   );
 };
-
 const styles: { [key: string]: React.CSSProperties } = {
   container: {
     minHeight: '100vh',

@@ -89,15 +89,13 @@ export default function QaitCoursesList() {
         </div>
       </div>
 
-      <CoursesStatsOverview filteredCourses={filteredCourses} />
-
+      {/*<CoursesStatsOverview filteredCourses={filteredCourses} />*/}
       <CoursesControls
         searchQuery={searchQuery}
         filterBy={filterBy}
         onSearchChange={setSearchQuery}
         onFilterChange={setFilterBy}
       />
-
       {loading ? (
         <CoursesEmptyState
           title="טוען קורסים..."
@@ -122,7 +120,6 @@ export default function QaitCoursesList() {
         ))}
       </div>
       )}
-
       {!loading && !error && filteredCourses.length === 0 && coursesData.length > 0 && (
         <CoursesEmptyState
           title="לא נמצאו קורסים תואמים"

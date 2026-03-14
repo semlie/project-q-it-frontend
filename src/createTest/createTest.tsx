@@ -42,7 +42,8 @@ const QaitCreateTest = () => {
   const [aiFiles, setAiFiles] = useState([]);
   const [aiInstructions, setAiInstructions] = useState('');
   const [numQuestions, setNumQuestions] = useState(10);
-  const [aiDifficulty, setAiDifficulty] = useState('מעורב');
+  const [aiDifficulty, setAiDifficulty] = useState(0); // 0 = mixed, 1 = easy, 2 = medium, 3 = hard
+  const [aiAdditionalInstructions, setAiAdditionalInstructions] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
 
   useEffect(() => {
@@ -101,8 +102,7 @@ const QaitCreateTest = () => {
     try {
       setIsGenerating(true);
       
-      // שליחת הקובץ הראשון שהועלה
-      const response = await getAiQuizzes(aiFiles[0]);
+      const response = await getAiQuizzes(aiFiles[0], numQuestions, aiDifficulty, aiAdditionalInstructions);
       
       if (!response || !response.questions) {
         throw new Error("לא התקבלו נתונים תקינים מה-AI");
@@ -114,13 +114,19 @@ const QaitCreateTest = () => {
       }
 
       const charToIndex: Record<string, number> = { 'A': 0, 'B': 1, 'C': 2, 'D': 3 };
+      
+      const levelToDifficulty: Record<number, string> = {
+        1: 'קל',
+        2: 'בינוני',
+        3: 'קשה'
+      };
 
       const aiGeneratedQuestions = response.questions.map((aiQ: any, index: number) => ({
         id: Date.now() + index,
         question: aiQ.questionText,
         answers: aiQ.options.map((opt: any) => opt.optionText),
         correctAnswer: charToIndex[aiQ.correctAnswerId] || 0,
-        difficulty: aiDifficulty === 'מעורב' ? 'בינוני' : aiDifficulty,
+        difficulty: levelToDifficulty[aiQ.level] || 'בינוני',
         points: 1
       }));
 
@@ -377,6 +383,43 @@ const QaitCreateTest = () => {
                     ))}
                   </div>
                 )}
+
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginTop: '16px' }}>
+                  <div>
+                    <label style={{ ...styles.label, marginBottom: '6px' }}>מספר שאלות</label>
+                    <input 
+                      type="number" 
+                      min="1" 
+                      max="50"
+                      value={numQuestions} 
+                      onChange={(e) => setNumQuestions(Number(e.target.value))} 
+                      style={styles.input} 
+                    />
+                  </div>
+                  <div>
+                    <label style={{ ...styles.label, marginBottom: '6px' }}>רמת קושי</label>
+                    <select 
+                      value={aiDifficulty} 
+                      onChange={(e) => setAiDifficulty(Number(e.target.value))} 
+                      style={styles.select}
+                    >
+                      <option value={0}>מעורבב</option>
+                      <option value={1}>קל</option>
+                      <option value={2}>בינוני</option>
+                      <option value={3}>קשה</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div style={{ marginTop: '12px' }}>
+                  <label style={{ ...styles.label, marginBottom: '6px' }}>הנחיות נוספות (אופציונלי)</label>
+                  <textarea 
+                    value={aiAdditionalInstructions} 
+                    onChange={(e) => setAiAdditionalInstructions(e.target.value)} 
+                    style={{ ...styles.textarea, minHeight: '60px' }}
+                    placeholder="לדוגמה: התמקד בהגדרות ומושגים..."
+                  />
+                </div>
 
                 <button 
                   style={{...styles.generateButton, opacity: isGenerating ? 0.7 : 1}} 
