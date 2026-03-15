@@ -355,7 +355,6 @@ export default function QaitCourseDetailsPage() {
               <div className="qcd-course-icon" style={{ backgroundColor: course.color }}>{course.icon}</div>
               <div>
                 <h1 className="qcd-title">{course.name}</h1>
-                <p className="qcd-subtitle">מרצה: {course.teacher}</p>
               </div>
             </div>
           </div>
@@ -371,31 +370,12 @@ export default function QaitCourseDetailsPage() {
             </div>
             <div className="qcd-stat-card">
               <div className="qcd-stat-header">
-                <ListChecks size={16} /> הושלמו
-              </div>
-              <div className="qcd-stat-value">{course.completedChapters}</div>
-            </div>
-            <div className="qcd-stat-card">
-              <div className="qcd-stat-header">
-                <FileText size={16} /> מבחנים
-              </div>
-              <div className="qcd-stat-value">{course.tests}</div>
-            </div>
-            <div className="qcd-stat-card">
-              <div className="qcd-stat-header">
-                <Trophy size={16} /> ממוצע
-              </div>
-              <div className="qcd-stat-value">{course.averageGrade}</div>
-            </div>
-            <div className="qcd-stat-card">
-              <div className="qcd-stat-header">
                 <FileText size={16} /> חומרים
               </div>
-              <div className="qcd-stat-value">{course.materials}</div>
+              <div className="qcd-stat-value">{course.materials || materials.length}</div>
             </div>
           </div>
         </div>
-
         <div className="qcd-view-tabs-wrap">
           <button
             type="button"
@@ -414,7 +394,6 @@ export default function QaitCourseDetailsPage() {
             פרקים
           </button>
         </div>
-
         {activeView === 'materials' && (
           <div className="qcd-section-card">
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
