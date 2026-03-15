@@ -22,7 +22,7 @@ export default function UserInfoCard({
       </div>
       <div className="user-info-content">
         <div className="user-info-image-section">
-          {userImageUrl && userImageUrl !== 'string' ? (
+          {userImageUrl && userImageUrl.length > 0 ? (
             <img src={userImageUrl} alt={userName} className="user-profile-image" />
           ) : (
             <div className="user-profile-placeholder">{avatarText}</div>

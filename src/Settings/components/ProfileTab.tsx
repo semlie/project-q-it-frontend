@@ -73,7 +73,7 @@ export default function ProfileTab({
         <label className="settings-label">תמונת פרופיל</label>
 
         <div style={{ marginBottom: '16px', textAlign: 'center', position: 'relative', display: 'inline-block', margin: '0 auto 16px', width: '100%' }}>
-          {(profileImagePreview || (userData?.userImageUrl && userData.userImageUrl !== 'string')) && (
+          {(profileImagePreview || (userData?.userImageUrl && userData.userImageUrl.length > 0)) && (
             <div style={{ position: 'relative', display: 'inline-block' }}>
               <img
                 src={profileImagePreview || userData?.userImageUrl || ''}
@@ -115,7 +115,7 @@ export default function ProfileTab({
               </button>
             </div>
           )}
-          {!profileImagePreview && (!userData?.userImageUrl || userData.userImageUrl === 'string') && (
+          {!profileImagePreview && (!userData?.userImageUrl || userData.userImageUrl.length === 0) && (
             <div
               style={{
                 width: '120px',

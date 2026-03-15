@@ -12,3 +12,22 @@ export const addMaterial = async (credentials: MaterialsType) => {
   const data = response.data;
   return data;
 };
+
+export const uploadMaterial = async (formData: FormData) => {
+  const response = await axios.post(`${url}/Materials`, formData, {
+    headers: { 'Content-Type': 'multipart/form-data' },
+  });
+  return response.data;
+};
+
+export const downloadMaterial = async (materialId: number): Promise<Blob> => {
+  const response = await axios.get(`${url}/Materials/${materialId}/download`, {
+    responseType: 'blob',
+  });
+  return response.data;
+};
+
+export const deleteMaterial = async (materialId: number) => {
+  const response = await axios.delete(`${url}/Materials/${materialId}`);
+  return response.data;
+};

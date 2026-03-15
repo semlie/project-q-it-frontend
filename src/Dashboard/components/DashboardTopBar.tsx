@@ -35,7 +35,7 @@ export default function DashboardTopBar({
             <div className="user-name">{userName}</div>
             <div className="user-role">{userRole}</div>
           </div>
-          {userImageUrl && userImageUrl !== 'string' ? (
+          {userImageUrl && userImageUrl.length > 0 ? (
             <img src={userImageUrl} alt={userName} className="avatar-image" />
           ) : (
             <div className="avatar">{avatarText}</div>

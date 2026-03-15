@@ -4,6 +4,14 @@ import { UserLoginType, UserType } from '../types/userType';
 
 const url = '/api';
 
+const normalizeImageUrl = (imageUrl: string | null | undefined): string | undefined => {
+  if (!imageUrl || imageUrl === 'string') return undefined;
+  if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) {
+    return imageUrl;
+  }
+  return `${window.location.origin}/${imageUrl}`;
+};
+
 export const register = async (formData: FormData) => {
   const response = await axios.post(`${url}/Users`, formData);
   return response.data;
@@ -23,29 +31,38 @@ export const login = async (credentials: UserLoginType) => {
 };
 
 export const updateUser = async (userData: UserType, password?: string) => {
+  // Send relative path to backend, not full URL
+  const imagePath = userData.userImageUrl 
+    ? userData.userImageUrl.replace(`${window.location.origin}/`, '') 
+    : '';
+    
   const updateData = {
     userId: userData.userId,
     userName: userData.userName,
     userEmail: userData.userEmail,
     role: userData.role === 'teacher' ? 'Teacher' : 'Student',
     classId: userData.classId,
-    userImageUrl: userData.userImageUrl || '',
-    userPassword: password || ''  // Password is required by backend
+    userImageUrl: imagePath,
+    userPassword: password || ''
   };
   const response = await axios.put(`${url}/Users/${userData.userId}`, updateData);
-  return response.data;
+  
+  // Return with normalized URL
+  return {
+    ...response.data,
+    userImageUrl: normalizeImageUrl(response.data.userImageUrl)
+  };
 };
 
 export const loginByToken = async (token: string) => {
   const response = await axios.get(`${url}/Login/${token}`);
   const userData = response.data;
-  // Normalize role to lowercase (backend returns "Student" or "Teacher")
   return {
     userId: userData.userId,
     userName: userData.userName,
     userEmail: userData.userEmail,
     role: userData.role ? userData.role.toLowerCase() : 'student',
-    userImageUrl: userData.userImageUrl,
+    userImageUrl: normalizeImageUrl(userData.userImageUrl),
     classId: userData.classId
   };
 };

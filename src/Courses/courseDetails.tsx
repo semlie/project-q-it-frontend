@@ -6,8 +6,7 @@ import { getCoursesByUserId} from '../services/course.service';
 import { Course } from './components/types';
 import { Paths } from '../routes/paths';
 import { getChaptersByCourseId, addChapter } from '../services/chapter.service';
-import { getMaterialsByIdCourse, addMaterial } from '../services/materials.service';
-import axios from '../services/axios';
+import { getMaterialsByIdCourse, uploadMaterial, downloadMaterial, deleteMaterial } from '../services/materials.service';
 import './courseDetails.css';
 
 interface ChapterItem {
@@ -104,15 +103,22 @@ function buildMaterials(source?: any): MaterialItem[] {
   return [];
 }
 
-function openMaterial(materialId?: number, rawUrl?: string | null) {
+async function openMaterial(materialId?: number, rawUrl?: string | null) {
   if (typeof materialId === 'number' && Number.isFinite(materialId) && materialId > 0) {
-    const downloadUrl = `http://localhost:5000/api/Materials/${materialId}/download`;
-    window.open(downloadUrl, '_blank', 'noopener,noreferrer');
-    return;
+    try {
+      const blob = await downloadMaterial(materialId);
+      const objectUrl = URL.createObjectURL(blob);
+      window.open(objectUrl, '_blank', 'noopener,noreferrer');
+      return;
+    } catch (error) {
+      console.error('Failed to download material', error);
+      alert('לא ניתן להוריד את הקובץ. נסה שוב מאוחר יותר.');
+      return;
+    }
   }
 
   if (rawUrl) {
-    const fallbackUrl = rawUrl.startsWith('http://') || rawUrl.startsWith('https://') ? rawUrl : `http://localhost:5000/${rawUrl.replace(/^\/+/, '')}`;
+    const fallbackUrl = rawUrl.startsWith('http://') || rawUrl.startsWith('https://') ? rawUrl : `${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/${rawUrl.replace(/^\/+/, '')}`;
     window.open(fallbackUrl, '_blank', 'noopener,noreferrer');
   }
 }
@@ -282,7 +288,7 @@ export default function QaitCourseDetailsPage() {
 
   const handleAddMaterial = async () => {
     if (!newMaterialName.trim() || !course?.id || !newMaterialFile) return;
-    
+
     setAddingMaterial(true);
     try {
       const formData = new FormData();
@@ -290,22 +296,36 @@ export default function QaitCourseDetailsPage() {
       formData.append('MatDescription', newMaterialDesc);
       formData.append('CourseId', String(course.id));
       formData.append('FileMaterial', newMaterialFile);
-      
-      await axios.post('/api/Materials', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' }
-      });
-      
+
+      await uploadMaterial(formData);
+
       setNewMaterialName('');
       setNewMaterialDesc('');
       setNewMaterialFile(null);
       setShowAddMaterial(false);
-      
+
       const updatedMaterials = await getMaterialsByIdCourse(course.id);
       setMaterialsSource(updatedMaterials);
     } catch (err) {
       console.error('Error adding material:', err);
     } finally {
       setAddingMaterial(false);
+    }
+  };
+
+  const handleDeleteMaterial = async (materialId: number) => {
+    if (!course?.id) return;
+
+    const confirmDelete = window.confirm('אתה בטוח שברצונך למחוק את החומר הזה?');
+    if (!confirmDelete) return;
+
+    try {
+      await deleteMaterial(materialId);
+      const updatedMaterials = await getMaterialsByIdCourse(course.id);
+      setMaterialsSource(updatedMaterials);
+    } catch (err) {
+      console.error('Error deleting material:', err);
+      alert('לא ניתן למחוק את החומר כעת. נסה שוב.');
     }
   };
 
@@ -437,20 +457,31 @@ export default function QaitCourseDetailsPage() {
                     </div>
                   </div>
 
-                  <button
-                    type="button"
-                    className={material.id ? 'qcd-material-btn' : 'qcd-material-btn-disabled'}
-                    disabled={!material.id}
-                    onClick={() => openMaterial(material.id, material.url)}
-                  >
-                    <Download size={14} /> {material.id ? 'צפייה' : 'לא זמין'}
-                  </button>
+                  <div className="qcd-material-actions">
+                    <button
+                      type="button"
+                      className={material.id ? 'qcd-material-btn' : 'qcd-material-btn-disabled'}
+                      disabled={!material.id}
+                      onClick={() => openMaterial(material.id, material.url)}
+                    >
+                      <Download size={14} /> {material.id ? 'צפייה' : 'לא זמין'}
+                    </button>
+
+                    {isTeacher && material.id && (
+                      <button
+                        type="button"
+                        className="qcd-material-btn qcd-material-btn--danger"
+                        onClick={() => handleDeleteMaterial(material.id!)}
+                      >
+                        מחק
+                      </button>
+                    )}
+                  </div>
                 </div>
               ))}
             </div>
           </div>
         )}
-
         {activeView === 'chapters' && (
           <>
             <div className="qcd-section-spacer" />
