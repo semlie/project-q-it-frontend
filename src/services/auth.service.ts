@@ -22,8 +22,17 @@ export const login = async (credentials: UserLoginType) => {
   return response.data;
 };
 
-export const updateUser = async (userData: UserType) => {
-  const response = await axios.put(`${url}/Users/${userData.userId}`, userData);
+export const updateUser = async (userData: UserType, password?: string) => {
+  const updateData = {
+    userId: userData.userId,
+    userName: userData.userName,
+    userEmail: userData.userEmail,
+    role: userData.role === 'teacher' ? 'Teacher' : 'Student',
+    classId: userData.classId,
+    userImageUrl: userData.userImageUrl || '',
+    userPassword: password || ''  // Password is required by backend
+  };
+  const response = await axios.put(`${url}/Users/${userData.userId}`, updateData);
   return response.data;
 };
 

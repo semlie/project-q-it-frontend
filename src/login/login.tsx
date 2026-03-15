@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { BookOpen } from 'lucide-react';
 import { useNavigate } from 'react-router';
-import { login as loginService } from '../services/auth.service';
 import { Paths } from '../routes/paths';
 import { useAuth } from '../context/AuthContext';
 import AuthVisualPanel from '../components/auth/AuthVisualPanel';
@@ -10,7 +9,6 @@ import AuthSubmitButton from '../components/auth/AuthSubmitButton';
 import LoginVisualFooterStats from './components/LoginVisualFooterStats';
 import LoginFormFields from './components/LoginFormFields';
 import LoginFormFooter from './components/LoginFormFooter';
-import { UserType } from '../types/userType';
 
 type LoginPageProps = {
   onSwitch?: () => void;
@@ -25,7 +23,19 @@ export const LoginPage = ({ onSwitch }: LoginPageProps) => {
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const navigate = useNavigate();
-  const { login } = useAuth();
+  const { login, error: authError, isAuthenticated } = useAuth();
+
+  React.useEffect(() => {
+    if (isAuthenticated) {
+      navigate(`/${Paths.dashboard}`);
+    }
+  }, [isAuthenticated, navigate]);
+
+  React.useEffect(() => {
+    if (authError) {
+      setError(authError);
+    }
+  }, [authError]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -33,31 +43,7 @@ export const LoginPage = ({ onSwitch }: LoginPageProps) => {
     setIsSubmitting(true);
 
     try {
-      const response = await loginService(formData);
-
-      let token: string;
-      let user: UserType;
-
-      if (typeof response === 'string') {
-        token = response;
-      } else {
-        token = response.token || response.Token;
-        user = response.user || response;
-      }
-
-      if (!token) {
-        setError('שגיאה: לא התקבל טוקן מהשרת');
-        setIsSubmitting(false);
-        return;
-      }
-
-      if (!user || typeof response === 'string') {
-        const { loginByToken } = await import('../services/auth.service');
-        user = await loginByToken(token);
-      }
-
-      login(user, token);
-      navigate(`/${Paths.dashboard}`);
+      await login(formData);
     } catch (err: any) {
       setError(err.response?.data?.message || 'שגיאה בהתחברות. אנא בדוק את פרטי ההתחברות.');
     } finally {
@@ -128,4 +114,4 @@ export const LoginPage = ({ onSwitch }: LoginPageProps) => {
       </div>
     </div>
   );
-}
+};

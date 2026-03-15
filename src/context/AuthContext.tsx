@@ -1,13 +1,14 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { getSession, setSession as saveSession, removeSession } from '../auth/auth.utils';
-import { loginByToken } from '../services/auth.service';
+import React, { createContext, useContext, useEffect, ReactNode } from 'react';
+import { useAppDispatch, useAppSelector } from '../store/hooks';
+import { checkAuth, logout, updateUser, loginUser } from '../store/slices/authSlice';
 import { UserType } from '../types/userType';
 
 interface AuthContextType {
-  user:UserType | null;
+  user: UserType | null;
   isLoading: boolean;
   isAuthenticated: boolean;
-  login: (user: UserType, token: string) => void;
+  error: string | null;
+  login: (credentials: { userEmail: string; userPassword: string }) => void;
   logout: () => void;
   updateUser: (user: UserType) => void;
 }
@@ -15,48 +16,33 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-  const [user, setUser] = useState<UserType | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const dispatch = useAppDispatch();
+  const { user, isLoading, isAuthenticated, error } = useAppSelector((state) => state.auth);
 
   useEffect(() => {
-    const loadUser = async () => {
-      try {
-        const token = getSession();
-        if (token) {
-          const userData = await loginByToken(token);
-          setUser(userData);
-        }
-      } catch (error) {
-        removeSession();
-      } finally {
-        setIsLoading(false);
-      }
-    };
+    dispatch(checkAuth());
+  }, [dispatch]);
 
-    loadUser();
-  }, []);
-
-  const login = (userData: UserType, token: string) => {
-    saveSession(token);
-    setUser(userData);
+  const handleLogin = (credentials: { userEmail: string; userPassword: string }) => {
+    dispatch(loginUser(credentials));
   };
 
-  const logout = () => {
-    removeSession();
-    setUser(null);
+  const handleLogout = () => {
+    dispatch(logout());
   };
 
-  const updateUser = (userData: UserType) => {
-    setUser(userData);
+  const handleUpdateUser = (userData: UserType) => {
+    dispatch(updateUser(userData));
   };
 
   const value = {
     user,
     isLoading,
-    isAuthenticated: !!user,
-    login,
-    logout,
-    updateUser,
+    isAuthenticated,
+    error,
+    login: handleLogin,
+    logout: handleLogout,
+    updateUser: handleUpdateUser,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
