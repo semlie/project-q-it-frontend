@@ -346,11 +346,9 @@ function buildTestsByDifficulty(chapterRaw: any): DifficultyTestCard[] {
   const hasAnyData = cards.some((card) => card.questionCount > 0 || card.answers.length > 0 || card.isDone);
   return hasAnyData ? cards : fallbackTests();
 }
-
 export default function QaitCourseChapterPage() {
   const [chapterRaw, setChapterRaw] = useState<any>(null);
   const [selectedLevel, setSelectedLevel] = useState<DifficultyLevel | null>(null);
-
   const navigate = useNavigate();
   const { chapterId, courseId } = useParams();
   const location = useLocation();
@@ -378,16 +376,7 @@ export default function QaitCourseChapterPage() {
 
   const testsByDifficulty = useMemo(() => buildTestsByDifficulty(chapterRaw), [chapterRaw]);
   const selectedTest = testsByDifficulty.find((test) => test.level === selectedLevel) || null;
-
-  const chapterTitle = state?.chapter?.title || chapterRaw?.chapterName || chapterRaw?.title || `פרק ${chapterId}`;
-  const chapterDescription =
-    chapterRaw?.chapterDescription ||
-    chapterRaw?.description ||
-    chapterRaw?.summary ||
-    'כאן יוצגו חומרי הפרק והתרגול לפי רמות קושי.';
-  const isCompleted = Boolean(state?.chapter?.isCompleted ?? chapterRaw?.isCompleted ?? false);
   const courseName = state?.courseName || 'הקורס';
-
   return (
     <div style={styles.container} dir="rtl">
       <div style={styles.content}>
@@ -398,21 +387,8 @@ export default function QaitCourseChapterPage() {
 
         <div style={styles.card}>
           <h1 style={styles.title}>
-            <BookOpen size={28} /> {chapterTitle}
           </h1>
           <p style={styles.subtitle}>קורס: {courseName}</p>
-
-          <div style={styles.section}>
-            <h2 style={styles.sectionTitle}>תוכן הפרק</h2>
-            <p style={styles.sectionText}>{chapterDescription}</p>
-            {isCompleted ? (
-              <div style={styles.statusDone}>
-                <CheckCircle2 size={16} /> פרק זה כבר הושלם
-              </div>
-            ) : (
-              <div style={styles.statusOpen}>פרק זה פתוח ללמידה</div>
-            )}
-          </div>
 
           <div style={styles.testsSection}>
             <h2 style={styles.testsTitle}>
@@ -423,12 +399,6 @@ export default function QaitCourseChapterPage() {
               {testsByDifficulty.map((test) => (
                 <div key={test.level} style={styles.testCard}>
                   <h3 style={styles.testLevel}>{test.level}</h3>
-                  <div style={styles.testMeta}>כמות שאלות: {test.questionCount}</div>
-                  <div style={styles.testMeta}>נענו: {test.answeredCount}</div>
-                  <div style={test.isDone ? styles.testDone : styles.testOpen}>
-                    {test.isDone ? 'בוצע ✅' : 'לא בוצע'}
-                  </div>
-
                   <button
                     type="button"
                     style={test.questionCount > 0 ? styles.enterExamBtn : styles.enterExamBtnDisabled}
@@ -438,15 +408,8 @@ export default function QaitCourseChapterPage() {
                         navigate(`/${Paths.takeTest.replace(':chapterId', chapterId).replace(':level', test.level)}`);
                       }
                     }}
-                  >
-                    כניסה למבחן
+                  > כניסה למבחן
                   </button>
-
-                  {test.isDone && (
-                    <button type="button" style={styles.answersBtn} onClick={() => setSelectedLevel(test.level)}>
-                      צפייה בתשובות שעניתי
-                    </button>
-                  )}
                 </div>
               ))}
             </div>

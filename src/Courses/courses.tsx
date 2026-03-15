@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { BookOpen } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
-import { getCoursesByUserId } from '../services/course.service';
+import { getCoursesByClassId, getCoursesByUserId } from '../services/course.service';
 import CoursesStatsOverview from './components/CoursesStatsOverview';
 import CoursesControls from './components/CoursesControls';
 import CourseCard from './components/CourseCard';
@@ -32,7 +32,7 @@ export default function QaitCoursesList() {
     materials: course.materials || 0,
     tests: course.tests || 0,
     upcomingTest: course.upcomingTest || null,
-    classId: course.schoolId || course.schoolId || 0,
+    classId: course.classId || course.classId || 0,
   });
 
   useEffect(() => {
@@ -41,7 +41,7 @@ export default function QaitCoursesList() {
         setLoading(true);
         setError(null);
         if (user && user.userId) {
-          const data = await getCoursesByUserId(user.userId);
+          const data = await getCoursesByClassId(user.classId);
           
           if (typeof data === 'string' && data.includes('not found')) {
             setError(data);

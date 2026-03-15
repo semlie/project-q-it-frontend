@@ -11,6 +11,8 @@ import UserInfoCard from './components/UserInfoCard';
 import { DashboardTabItem } from './components/types';
 import { getCoursesByUserId } from '../services/course.service';
 import { Course } from '../Courses/components/types';
+import TeacherStats from '../Stats/teacherStats';
+import QaitCreateTest from '../createTest/createTest';
 
 export default function QaitTeacherDashboard() {
   const [activeTab, setActiveTab] = useState('home');
@@ -26,16 +28,6 @@ export default function QaitTeacherDashboard() {
   };
 
   const handleChangeTab = (tabId: string) => {
-    if (tabId === 'createTest') {
-      navigate(`/${Paths.createTest}`);
-      return;
-    }
-
-    if (tabId === 'stats') {
-      navigate(`/${Paths.teacherStats}`);
-      return;
-    }
-
     setActiveTab(tabId);
   };
 
@@ -80,6 +72,21 @@ export default function QaitTeacherDashboard() {
     role: 'מורה',
     avatar: user?.userName ? user.userName.substring(0, 2).toUpperCase() : "MT"
   };
+
+  useEffect(() => {
+    const loadCourses = async () => {
+      if (!user?.userId) return;
+      try {
+        const data = await getCoursesByUserId(user.userId);
+        setCourses(Array.isArray(data) ? data : []);
+      } catch (err) {
+        console.error('Failed to load courses for teacher dashboard:', err);
+        setCourses([]);
+      }
+    };
+
+    loadCourses();
+  }, [user]);
   const navItems: DashboardTabItem[] = [
     { id: 'home', label: 'דף הבית', icon: <Home size={20} /> },
     { id: 'classes', label: 'הקורסים שלי', icon: <BookOpen size={20} /> },
@@ -185,10 +192,9 @@ export default function QaitTeacherDashboard() {
               </div>
             </div>
           ) : activeTab === 'stats' ? (
-            <div style={{textAlign: 'center', padding: '60px 20px'}}>
-              <BarChart3 size={64} style={{ color: '#10b981', marginBottom: '16px' }} />
-              <h2 className="section-title">מעבר לסטטיסטיקות...</h2>
-            </div>
+            <TeacherStats />
+          ) : activeTab === 'createTest' ? (
+            <QaitCreateTest />
           ) : (
             <>
               <h1 className="welcome-title">שלום, {userData.name}! 👋</h1>

@@ -14,9 +14,7 @@ type SettingsSidebarProps = {
 
 const tabs: TabItem[] = [
   { id: 'profile', label: 'פרופיל', icon: <User size={20} /> },
-  { id: 'security', label: 'אבטחה', icon: <Lock size={20} /> },
-  { id: 'notifications', label: 'התראות', icon: <Bell size={20} /> },
-  { id: 'preferences', label: 'העדפות', icon: <Palette size={20} /> },
+  { id: 'security', label: 'אבטחה', icon: <Lock size={20} /> }
 ];
 
 export default function SettingsSidebar({ activeTab, onChangeTab }: SettingsSidebarProps) {

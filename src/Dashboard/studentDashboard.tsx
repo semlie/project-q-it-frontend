@@ -24,7 +24,6 @@ export default function QaitStudentDashboard() {
   const userData = {
     name: user?.userName || '',
     role: 'תלמיד',
-    class: "כיתה י'1",
     avatar: user?.userName ? user.userName.substring(0, 2).toUpperCase() : "YK"
   };
   const navItems: DashboardTabItem[] = [

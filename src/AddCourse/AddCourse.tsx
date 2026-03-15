@@ -70,10 +70,9 @@ const AddCourse: React.FC = () => {
     setError('');
 
     try {
-      const selectedClass = classes.find(c => c.classId === selectedClassId);
       await addCourse({
         CourseName: courseName,
-        SchoolId: selectedClass?.schoolId || 0
+        ClassId: selectedClassId
       });
       
       alert('הקורס נוסף בהצלחה!');

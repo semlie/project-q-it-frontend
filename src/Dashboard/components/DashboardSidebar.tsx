@@ -18,10 +18,15 @@ export default function DashboardSidebar({
     <aside className="dashboard-sidebar">
       <div className="sidebar-header">
         <div className="logo-container">
-          <div className="logo-circle">Q</div>
+          <div className="logo-circle">
+            <img
+              src="/assets/images/icon.png"
+              alt="Q-it Logo"
+              className="logo-image"
+            />
+          </div>
           <div>
             <div className="logo-text">Q-it</div>
-            <div className="logo-subtext">UNI-HIT</div>
           </div>
         </div>
       </div>

@@ -6,8 +6,6 @@ import { UserType } from '../types/userType';
 import SettingsSidebar from './components/SettingsSidebar';
 import ProfileTab from './components/ProfileTab';
 import SecurityTab from './components/SecurityTab';
-import NotificationsTab from './components/NotificationsTab';
-import PreferencesTab from './components/PreferencesTab';
 import { SettingsTab } from './components/types';
 
 export default function QaitSettings() {
@@ -109,17 +107,14 @@ export default function QaitSettings() {
       alert('שגיאה: לא ניתן לזהות את המשתמש');
     }
   };
-
   return (
     <div className="settings-container" dir="rtl">
       <div className="settings-header">
         <h1 className="settings-title">הגדרות</h1>
         <p className="settings-subtitle">נהל את החשבון וההעדפות שלך</p>
       </div>
-
       <div className="settings-main-content">
         <SettingsSidebar activeTab={activeTab} onChangeTab={setActiveTab} />
-
         <div className="settings-content">
           {activeTab === 'profile' && (
             <ProfileTab
@@ -131,26 +126,11 @@ export default function QaitSettings() {
               onSaveProfile={handleSaveProfile}
             />
           )}
-
           {activeTab === 'security' && (
             <SecurityTab
               passwordData={passwordData}
               setPasswordData={setPasswordData}
               onChangePassword={handleChangePassword}
-            />
-          )}
-
-          {activeTab === 'notifications' && (
-            <NotificationsTab
-              notifications={notifications}
-              setNotifications={setNotifications}
-            />
-          )}
-
-          {activeTab === 'preferences' && (
-            <PreferencesTab
-              preferences={preferences}
-              setPreferences={setPreferences}
             />
           )}
         </div>
