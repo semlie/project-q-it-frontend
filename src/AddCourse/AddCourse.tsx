@@ -74,7 +74,8 @@ const AddCourse: React.FC = () => {
     try {
       await addCourse({
         CourseName: courseName,
-        ClassId: selectedClassId
+        ClassId: selectedClassId,
+        TeacherId: user?.userId 
       });
       
       alert('הקורס נוסף בהצלחה!');

@@ -41,7 +41,14 @@ export default function QaitCoursesList() {
         setLoading(true);
         setError(null);
         if (user && user.userId) {
-          const data = await getCoursesByClassId(user.classId);
+          let data;
+          // אם המשתמש הוא מורה - נביא קורסים לפי ID שלו
+          // אם המשתמש הוא תלמיד - נביא קורסים לפי הכיתה שלו
+          if (user.role === 'teacher') {
+            data = await getCoursesByUserId(user.userId);
+          } else {
+            data = await getCoursesByClassId(user.classId);
+          }
           
           if (typeof data === 'string' && data.includes('not found')) {
             setError(data);
