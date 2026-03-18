@@ -6,7 +6,7 @@ import { addCourse } from '../services/course.service';
 import axios from '../services/axios';
 import { Paths } from '../routes/paths';
 
-import styles from './AddCourse.css';
+import './AddCourse.css';
 
 interface ClassOption {
   classId: number;
@@ -87,35 +87,35 @@ const AddCourse: React.FC = () => {
   };
 
   return (
-    <div className={styles.container} dir="rtl">
-      <div className={styles.card}>
-        <div className={styles.header}>
-          <div className={styles.icon}>
+    <div className="container" dir="rtl">
+      <div className="card">
+        <div className="header">
+          <div className="icon">
             <BookOpen size={32} />
           </div>
-          <h1 className={styles.title}>הוספת קורס חדש</h1>
-          <p className={styles.subtitle}>צור קורס חדש עבור הכיתות שלך</p>
+          <h1 className="title">הוספת קורס חדש</h1>
+          <p className="subtitle">צור קורס חדש עבור הכיתות שלך</p>
         </div>
 
-        <form onSubmit={handleSubmit} className={styles.form}>
-          <div className={styles.formGroup}>
-            <label className={styles.label}>שם הקורס</label>
+        <form onSubmit={handleSubmit} className="form">
+          <div className="formGroup">
+            <label className="label">שם הקורס</label>
             <input
               type="text"
               value={courseName}
               onChange={(e) => setCourseName(e.target.value)}
               placeholder="לדוגמה: מתמטיקה, אנגלית, פיזיקה..."
-              className={styles.input}
+              className="input"
               disabled={loading}
             />
           </div>
 
-          <div className={styles.formGroup}>
-            <label className={styles.label}>כיתה</label>
+          <div className="formGroup">
+            <label className="label">כיתה</label>
             <select
               value={selectedClassId || ''}
               onChange={(e) => setSelectedClassId(Number(e.target.value))}
-              className={styles.select}
+              className="select"
               disabled={loading}
             >
               <option value="">בחר כיתה</option>
@@ -126,28 +126,28 @@ const AddCourse: React.FC = () => {
               ))}
             </select>
             {classes.length === 0 && (
-              <p className={styles.hint}>אין לך כיתות משויכות. פנה למנהל המערכת.</p>
+              <p className="hint">אין לך כיתות משויכות. פנה למנהל המערכת.</p>
             )}
           </div>
 
           {error && (
-            <div className={styles.error}>
+            <div className="error">
               {error}
             </div>
           )}
 
-          <div className={styles.actions}>
+          <div className="actions">
             <button
               type="button"
               onClick={() => navigate(`/${Paths.dashboard}`)}
-              className={styles.cancelButton}
+              className="cancelButton"
               disabled={loading}
             >
               ביטול
             </button>
             <button
               type="submit"
-              className={styles.submitButton}
+              className="submitButton"
               disabled={loading || !courseName.trim() || !selectedClassId}
             >
               {loading ? 'שומר...' : 'שמור קורס'}

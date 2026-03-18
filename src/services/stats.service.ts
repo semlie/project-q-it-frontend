@@ -9,15 +9,6 @@ export interface OverallStat {
   trend?: string;
 }
 
-export interface SubjectPerformanceItem {
-  subject: string;
-  average: number;
-  lastGrade: number;
-  trend: string;
-  tests: number;
-  classAverage: number;
-}
-
 export interface RecentTest {
   id: number;
   subject: string;
@@ -79,16 +70,6 @@ export const getStudentOverallStats = async (userId: number) => {
     return response.data;
   } catch (error) {
     console.error('Error fetching student overall stats:', error);
-    throw error;
-  }
-};
-
-export const getStudentSubjectPerformance = async (userId: number, timeRange: string = 'semester') => {
-  try {
-    const response = await axios.get(`${url}/Stats/student/${userId}/subjects?timeRange=${timeRange}`);
-    return response.data;
-  } catch (error) {
-    console.error('Error fetching subject performance:', error);
     throw error;
   }
 };

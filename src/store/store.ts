@@ -7,7 +7,6 @@ import authReducer from './slices/authSlice';
 import coursesReducer from './slices/coursesSlice';
 import chaptersReducer from './slices/chaptersSlice';
 import questionsReducer from './slices/questionsSlice';
-import statsReducer from './slices/statsSlice';
 
 /**
  * יצירת ה-Store עם כל ה-reducers
@@ -18,7 +17,6 @@ export const store = configureStore({
     courses: coursesReducer,  // ניהול קורסים
     chapters: chaptersReducer, // ניהול פרקים
     questions: questionsReducer, // ניהול שאלות ומבחנים
-    stats: statsReducer,     // ניהול סטטיסטיקות
   },
 });
 

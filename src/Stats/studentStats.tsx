@@ -3,18 +3,18 @@ import { TrendingUp, BookOpen, Trophy, Clock, Loader2, AlertCircle } from 'lucid
 import { useAuth } from '../context/AuthContext';
 import StatsHeader from './components/StatsHeader';
 import OverallStatsGrid from './components/OverallStatsGrid';
-import SubjectPerformanceSection from './components/SubjectPerformanceSection';
 import AchievementsSection from './components/AchievementsSection';
 import { styles } from './components/styles';
-import {Achievement,OverallStat,RecentTest,SubjectPerformanceItem,WeeklyProgressItem,} from './components/types';
-import {getStudentOverallStats,getStudentRecentTests,getStudentStudyHabits,getStudentAchievements,getStudentWeeklyProgress} from '../services/stats.service';
+import { Achievement, OverallStat } from './components/types';
+import { getStudentOverallStats, getStudentAchievements } from '../services/stats.service';
+
 export default function QaitStudentStats() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { user } = useAuth();
   const [overallStats, setOverallStats] = useState<OverallStat[]>([]);
-  const [subjectPerformance, setSubjectPerformance] = useState<SubjectPerformanceItem[]>([]);
   const [achievements, setAchievements] = useState<Achievement[]>([]);
+
   useEffect(() => {
     const fetchStats = async () => {
       try {
@@ -25,14 +25,11 @@ export default function QaitStudentStats() {
           return;
         }
         if (user.userId) {
-          //habits
-          const [overall, subjects, weekly, ach, recent] = await Promise.all([
+          const [overall, ach] = await Promise.all([
             getStudentOverallStats(user.userId),
-            getStudentWeeklyProgress(user.userId),
             getStudentAchievements(user.userId),
-            getStudentRecentTests(user.userId),
-            getStudentStudyHabits(user.userId),
           ]);
+          
           // Map overall stats - backend returns array of {label, value, change, trend}
           const mappedOverall: OverallStat[] = overall ? overall.map((stat: any, index: number) => {
             const IconComponent = [TrendingUp, BookOpen, Clock, Trophy][index];
@@ -45,23 +42,7 @@ export default function QaitStudentStats() {
               color: ['#10b981', '#06b6d4', '#8b5cf6', '#f59e0b'][index]
             };
           }) : [];
-          // Map subjects
-          const mappedSubjects: SubjectPerformanceItem[] = subjects?.map((s: any, i: number) => ({
-            subject: s.subject || '',
-            average: s.average || 0,
-            lastGrade: s.lastGrade || 0,
-            trend: s.trend || 'stable',
-            tests: s.tests || 0,
-            classAverage: s.classAverage || 0,
-            color: ['#14b8a6', '#06b6d4', '#10b981', '#f59e0b', '#8b5cf6'][i % 5],
-            strength: s.strength || 'טוב'
-          })) || [];
-          // Map weekly progress - backend returns {day, tests, hours, average}
-          const mappedWeekly: WeeklyProgressItem[] = weekly?.map((w: any) => ({
-            week: w.day || '',
-            score: w.average || 0,
-            tests: w.tests || 0
-          })) || [];
+          
           // Map achievements
           const mappedAchievements: Achievement[] = ach?.map((a: any) => ({
             id: a.id || 0,
@@ -72,21 +53,11 @@ export default function QaitStudentStats() {
             date: a.date ? new Date(a.date).toLocaleDateString('he-IL') : '',
             rarity: a.type === 'streak' ? 'נדיר' : a.type === 'grade' ? 'מיוחד' : 'רגיל'
           })) || [];
-          // Map recent tests
-          const mappedRecent: RecentTest[] = recent?.map((r: any) => ({
-            id: r.id || 0,
-            subject: r.subject || '',
-            name: r.title || '',
-            grade: r.score || 0,
-            date: r.date ? new Date(r.date).toLocaleDateString('he-IL') : '',
-            classAvg: 0
-          })) || [];
+          
           setOverallStats(mappedOverall);
-          setSubjectPerformance(mappedSubjects);
           setAchievements(mappedAchievements);
         } else {
           setOverallStats([]);
-          setSubjectPerformance([]);
           setAchievements([]);
         }
       } catch (err: any) {
@@ -97,6 +68,7 @@ export default function QaitStudentStats() {
     };
     fetchStats();
   }, [user]);
+
   if (loading) {
     return (
       <div style={{...styles.container, display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '400px'}} dir="rtl">
@@ -104,6 +76,7 @@ export default function QaitStudentStats() {
       </div>
     );
   }
+
   if (error) {
     return (
       <div style={{...styles.container, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', minHeight: '400px'}} dir="rtl">
@@ -112,13 +85,14 @@ export default function QaitStudentStats() {
       </div>
     );
   }
+
   return (
     <div style={styles.container} dir="rtl">
       <StatsHeader title="הסטטיסטיקות שלי" />
       <OverallStatsGrid stats={overallStats} />
       <div style={styles.mainLayout}>
         <div style={styles.leftColumn}>
-          <SubjectPerformanceSection subjectPerformance={subjectPerformance} />
+          {/* TODO: Add recent tests or weekly progress chart here */}
         </div>
         <div style={styles.rightColumn}>
           <AchievementsSection achievements={achievements} />

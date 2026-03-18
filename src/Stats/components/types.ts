@@ -12,23 +12,6 @@ export interface OverallStat {
   color: string;
 }
 
-export interface SubjectPerformanceItem {
-  subject: string;
-  average: number;
-  lastGrade: number;
-  trend: Trend;
-  tests: number;
-  classAverage: number;
-  color: string;
-  strength: string;
-}
-
-export interface WeeklyProgressItem {
-  week: string;
-  score: number;
-  tests: number;
-}
-
 export interface Achievement {
   id: number;
   title: string;
@@ -37,21 +20,4 @@ export interface Achievement {
   earned: boolean;
   date?: string;
   rarity: string;
-}
-
-export interface RecentTest {
-  id: number;
-  subject: string;
-  name: string;
-  grade: number;
-  date: string;
-  classAvg: number;
-}
-
-export interface StudyHabits {
-  bestTimeOfDay: string;
-  avgSessionLength: string;
-  preferredSubject: string;
-  studyStreak: number;
-  totalStudyTime: string;
 }
