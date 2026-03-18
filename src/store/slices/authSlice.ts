@@ -1,16 +1,26 @@
+/**
+ * Slice לניהול אימות ב-Redux
+ * מכיל את המצב והפעולות לאימות משתמשים
+ */
 import { createSlice, createAsyncThunk, PayloadAction } from '@reduxjs/toolkit';
 import { getSession, removeSession, setSession } from '../../auth/auth.utils';
 import { loginByToken, login } from '../../services/auth.service';
 import { UserType } from '../../types/userType';
 
+/**
+ * ממשק מצב האימות
+ */
 interface AuthState {
-  user: UserType | null;
-  token: string | null;
-  isLoading: boolean;
-  isAuthenticated: boolean;
-  error: string | null;
+  user: UserType | null;           // פרטי המשתמש
+  token: string | null;            // טוקן ה-JWT
+  isLoading: boolean;               // האם יש טעינה
+  isAuthenticated: boolean;        // האם המשתמש מאומת
+  error: string | null;            // הודעת שגיאה
 }
 
+/**
+ * מצב התחלתי - בודק אם יש טוקן שמור
+ */
 const initialState: AuthState = {
   user: null,
   token: getSession(),
@@ -19,6 +29,9 @@ const initialState: AuthState = {
   error: null,
 };
 
+/**
+ * בדיקת אימות - מאמת את הטוקן הקיים ב-localStorage
+ */
 export const checkAuth = createAsyncThunk(
   'auth/checkAuth',
   async (_, { rejectWithValue }) => {
@@ -36,6 +49,9 @@ export const checkAuth = createAsyncThunk(
   }
 );
 
+/**
+ * התחברות - שולח פרטי התחברות ושומר את הטוקן
+ */
 export const loginUser = createAsyncThunk(
   'auth/login',
   async (credentials: { userEmail: string; userPassword: string }, { rejectWithValue }) => {
@@ -50,10 +66,16 @@ export const loginUser = createAsyncThunk(
   }
 );
 
+/**
+ * Slice לאימות עם reducers ו-extraReducers
+ */
 const authSlice = createSlice({
   name: 'auth',
   initialState,
   reducers: {
+    /**
+     * התנתקות - מסיר את הטוקן ומאפס את המצב
+     */
     logout: (state) => {
       removeSession();
       state.user = null;
@@ -61,40 +83,52 @@ const authSlice = createSlice({
       state.isAuthenticated = false;
       state.error = null;
     },
+    /**
+     * עדכון פרטי משתמש במצב
+     */
     updateUser: (state, action: PayloadAction<UserType>) => {
       state.user = action.payload;
     },
+    /**
+     * ניקוי שגיאה
+     */
     clearError: (state) => {
       state.error = null;
     },
   },
   extraReducers: (builder) => {
     builder
+      // בדיקת אימות בהמתנה
       .addCase(checkAuth.pending, (state) => {
         state.isLoading = true;
       })
+      // בדיקת אימות הצליחה
       .addCase(checkAuth.fulfilled, (state, action) => {
         state.isLoading = false;
         state.isAuthenticated = true;
         state.user = action.payload.user;
         state.token = action.payload.token;
       })
+      // בדיקת אימות נכשלה
       .addCase(checkAuth.rejected, (state) => {
         state.isLoading = false;
         state.isAuthenticated = false;
         state.user = null;
         state.token = null;
       })
+      // התחברות בהמתנה
       .addCase(loginUser.pending, (state) => {
         state.isLoading = true;
         state.error = null;
       })
+      // התחברות הצליחה
       .addCase(loginUser.fulfilled, (state, action) => {
         state.isLoading = false;
         state.isAuthenticated = true;
         state.user = action.payload.user;
         state.token = action.payload.token;
       })
+      // התחברות נכשלה
       .addCase(loginUser.rejected, (state, action) => {
         state.isLoading = false;
         state.error = action.payload as string;

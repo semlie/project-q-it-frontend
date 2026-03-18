@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Home, FileEdit, BarChart3, Settings, Clock, CheckCircle, BookOpen, Bell } from 'lucide-react';
+import { Home, FileEdit, BarChart3, Settings, Clock, BookOpen } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router';
 import { Paths } from '../routes/paths';
@@ -20,7 +20,6 @@ export default function QaitTeacherDashboard() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
 
-  console.log('Teacher Dashboard: Current user from context:', user);
 
   const handleLogout = () => {
     logout();

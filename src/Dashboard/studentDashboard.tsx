@@ -16,7 +16,6 @@ export default function QaitStudentDashboard() {
   const [activeTab, setActiveTab] = useState('home');
   const { user, logout } = useAuth();
   const navigate = useNavigate();
-  console.log('Dashboard: Current user from context:', user);
   const handleLogout = () => {
     logout();
     navigate(`/${Paths.login}`);

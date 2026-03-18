@@ -68,7 +68,6 @@ export default function QaitTeacherStats() {
           setError('משתמש לא מחובר');
           return;
         }
-
         if (user.userId) {
           const [overall, classes, subs, recent] = await Promise.all([
             getTeacherOverallStats(user.userId),
@@ -76,13 +75,6 @@ export default function QaitTeacherStats() {
             getTeacherSubjects(user.userId),
             getTeacherRecentTests(user.userId),
           ]);
-
-          console.log('Teacher Stats API Response:');
-          console.log('- Overall:', overall);
-          console.log('- Classes:', classes);
-          console.log('- Subjects:', subs);
-          console.log('- Recent:', recent);
-          
           // Map overall stats - backend returns array of {label, value}
           const mappedOverall: TeacherOverallStat[] = overall ? overall.map((stat: any, index: number) => {
             const IconComponent = [Users, FileEdit, TrendingUp, BookOpen][index];
@@ -95,7 +87,6 @@ export default function QaitTeacherStats() {
               color: ['#10b981', '#06b6d4', '#f59e0b', '#8b5cf6'][index]
             };
           }) : [];
-
           const mappedClasses: ClassProgress[] = classes?.map((c: any, i: number) => ({
             className: c.className || `כיתה ${i + 1}`,
             average: c.average || 0,
@@ -104,7 +95,6 @@ export default function QaitTeacherStats() {
             trend: c.trend || 'stable',
             color: ['#14b8a6', '#06b6d4', '#10b981', '#f59e0b', '#8b5cf6'][i % 5]
           })) || [];
-
           const mappedSubjects: TeacherSubjectItem[] = subs?.map((s: any, i: number) => ({
             subject: s.subject || 'נושא',
             classes: s.classes || 0,
@@ -114,7 +104,6 @@ export default function QaitTeacherStats() {
             trend: s.trend || 'stable',
             color: ['#14b8a6', '#06b6d4', '#10b981', '#f59e0b'][i % 4]
           })) || [];
-
           // Backend returns RecentTest: { id, subject, title, date, score, maxScore, duration }
           const mappedRecent: TeacherRecentTest[] = recent?.map((t: any) => ({
             id: t.id || 0,
@@ -193,7 +182,6 @@ export default function QaitTeacherStats() {
               </div>
             ))}
           </div>
-
           <div style={styles.mainLayout}>
             <div style={styles.leftColumn}>
               {classProgress.length > 0 && (
@@ -218,7 +206,6 @@ export default function QaitTeacherStats() {
                   ))}
                 </div>
               )}
-
               {subjects.length > 0 && (
                 <div style={styles.section}>
                   <h3 style={styles.sectionTitle}>ממוצעים לפי מקצוע</h3>
@@ -252,7 +239,6 @@ export default function QaitTeacherStats() {
                 </div>
               )}
             </div>
-
             <div style={styles.rightColumn}>
               {recentTests.length > 0 && (
                 <div style={styles.section}>

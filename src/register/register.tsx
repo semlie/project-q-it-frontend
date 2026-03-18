@@ -69,7 +69,6 @@ useEffect(() => {
     setIsLoadingClasses(true);
     try {
       const rawClassesData = await getClassesBySchoolId(Number(formData.SchoolId));
-      console.log("Classes from server:", rawClassesData);
       // ממפים לאובייקטי ClassOption עם classId ו-className
       const formattedClasses: ClassOption[] = rawClassesData.map((item: any) => ({
         classId: item.classId || item.id || 0,
@@ -114,7 +113,6 @@ useEffect(() => {
       // אם מורה — addTeacherClass לכל כיתה שנבחרה
       if (userType === 'teacher' && formData.TeacherClassIds.length > 0) {
         const teacherId = createdUser?.userId || createdUser?.id || createdUser?.UserId || createdUser;
-        console.log('Register response:', createdUser, 'teacherId:', teacherId);
         
         if (teacherId) {
           await Promise.all(
@@ -192,22 +190,17 @@ useEffect(() => {
           </>
         }
       />
-
       <div className="flex-1 flex flex-col p-6 md:p-12 lg:p-20 justify-center items-center bg-gray-50/50">
         <div className="w-full max-w-md space-y-10">
-          
           <AuthMobileBrand
             iconContainerClassName="w-16 h-16 bg-gradient-to-br from-cyan-400 to-blue-600 rounded-2xl shadow-lg flex items-center justify-center"
             icon={<Zap size={32} className="text-white fill-white" />}
           />
-
           <div className="space-y-2 text-center md:text-right">
             <h2 className="text-4xl font-extrabold text-gray-900 tracking-tight">!הצטרפו אלינו</h2>
             <p className="text-gray-500 text-lg">צרו חשבון חדש והתחילו את המסע הלימודי שלכם</p>
           </div>
-
           <UserTypeSelector userType={userType} onChange={setUserType} />
-
           <form onSubmit={handleSubmit} className="space-y-5">
             <div className="space-y-4">
               <div className="relative group">
@@ -223,14 +216,12 @@ useEffect(() => {
                   className="w-full pr-12 pl-4 py-4 bg-white border border-gray-200 rounded-2xl focus:ring-2 focus:ring-cyan-500/20 focus:border-cyan-500 outline-none transition-all text-gray-900 placeholder:text-gray-400"
                 />
               </div>
-
               <ProfileImageUpload
                 profileImage={profileImage}
                 profileImagePreview={profileImagePreview}
                 onImageChange={handleImageChange}
                 onRemove={removeProfileImage}
               />
-
               <div className="relative group">
                 <div className="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none text-gray-400 group-focus-within:text-cyan-500 transition-colors">
                   <Mail size={20} />
@@ -244,7 +235,6 @@ useEffect(() => {
                   className="w-full pr-12 pl-4 py-4 bg-white border border-gray-200 rounded-2xl focus:ring-2 focus:ring-cyan-500/20 focus:border-cyan-500 outline-none transition-all text-gray-900 placeholder:text-gray-400"
                 />
               </div>
-              
               <SchoolDropdown
                 schools={schools}
                 schoolId={formData.SchoolId}
@@ -255,7 +245,6 @@ useEffect(() => {
                   setShowSchoolDropdown(false);
                 }}
               />
-
               <div className={!formData.SchoolId ? "opacity-50 pointer-events-none" : ""}>
                 <GradeDropdown
                   classes={availableClasses}
@@ -273,7 +262,6 @@ useEffect(() => {
                 />
                 {isLoadingClasses && <p className="text-xs text-cyan-600 mt-1 mr-2 animate-pulse">טוען כיתות...</p>}
               </div>
-
               {/* שאר שדות הסיסמה נשארים ללא שינוי */}
               <div className="relative group">
                 <div className="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none text-gray-400 group-focus-within:text-cyan-500 transition-colors">
@@ -295,7 +283,6 @@ useEffect(() => {
                   {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
                 </button>
               </div>
-
               <div className="relative group">
                 <div className="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none text-gray-400 group-focus-within:text-cyan-500 transition-colors">
                   <Lock size={20} />
@@ -317,7 +304,6 @@ useEffect(() => {
                 </button>
               </div>
             </div>
-
             <AuthSubmitButton label={userType === 'student' ? 'הרשמה כתלמיד' : 'הרשמה כמורה'} />
             <AuthProviderDivider text="או הרשמו באמצעות" />
             <GoogleAuthButton />

@@ -1,24 +1,35 @@
+/**
+ * Context לניהול אימות המשתמש
+ * משתמש ב-Redux לניהול מצב האימות
+ */
 import React, { createContext, useContext, useEffect, ReactNode } from 'react';
 import { useAppDispatch, useAppSelector } from '../store/hooks';
 import { checkAuth, logout, updateUser, loginUser } from '../store/slices/authSlice';
 import { UserType } from '../types/userType';
 
+/**
+ * ממשק ה-Context לאימות
+ */
 interface AuthContextType {
-  user: UserType | null;
-  isLoading: boolean;
-  isAuthenticated: boolean;
-  error: string | null;
-  login: (credentials: { userEmail: string; userPassword: string }) => void;
-  logout: () => void;
-  updateUser: (user: UserType) => void;
+  user: UserType | null;           // פרטי המשתמש המחובר
+  isLoading: boolean;               // האם יש טעינה בתהליך
+  isAuthenticated: boolean;        // האם המשתמש מאומת
+  error: string | null;            // הודעת שגיאה אם יש
+  login: (credentials: { userEmail: string; userPassword: string }) => void;  // פונקציית התחברות
+  logout: () => void;               // התנתקות
+  updateUser: (user: UserType) => void;  // עדכון פרטי משתמש
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+/**
+ * Provider לאימות - עוטף את האפליקציה ומספק גישה לפונקציות אימות
+ */
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const dispatch = useAppDispatch();
   const { user, isLoading, isAuthenticated, error } = useAppSelector((state) => state.auth);
 
+  // בדיקת אימות בטעינת האפליקציה
   useEffect(() => {
     dispatch(checkAuth());
   }, [dispatch]);
@@ -48,6 +59,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
 
+/**
+ * Hook לשימוש באימות בקומפוננטות
+ */
 export const useAuth = () => {
   const context = useContext(AuthContext);
   if (context === undefined) {

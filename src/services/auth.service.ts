@@ -1,9 +1,15 @@
-
+/**
+ * שירות אימות וניהול משתמשים
+ * מכיל פונקציות להתחברות, הרשמות, עדכון פרטים וטיפול בתמונות פרופיל
+ */
 import axios from './axios';
 import { UserLoginType, UserType } from '../types/userType';
 
 const url = '/api';
 
+/**
+ * מנרמל כתובת תמונה - מוסיף את כתובת השרת אם התמונה היא נתיב יחסי
+ */
 const normalizeImageUrl = (imageUrl: string | null | undefined): string | undefined => {
   if (!imageUrl || imageUrl === 'string') return undefined;
   if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) {
@@ -12,11 +18,17 @@ const normalizeImageUrl = (imageUrl: string | null | undefined): string | undefi
   return `${window.location.origin}/${imageUrl}`;
 };
 
+/**
+ * רישום משתמש חדש
+ */
 export const register = async (formData: FormData) => {
   const response = await axios.post(`${url}/Users`, formData);
   return response.data;
 };
 
+/**
+ * הוספת קשר בין מורה לכיתה
+ */
 export const addTeacherClass = async (teacherId: number, classId: number) => {
   const response = await axios.post(`${url}/TeacherClass`, {
     teacherId,
@@ -25,13 +37,19 @@ export const addTeacherClass = async (teacherId: number, classId: number) => {
   return response.data;
 };
 
+/**
+ * התחברות משתמש
+ */
 export const login = async (credentials: UserLoginType) => {
   const response = await axios.post(`${url}/Login`, credentials);
   return response.data;
 };
 
+/**
+ * עדכון פרטי משתמש
+ * שולח נתיב יחסי לתמונה לשרת, ומחזיר עם URL מלא
+ */
 export const updateUser = async (userData: UserType, password?: string) => {
-  // Send relative path to backend, not full URL
   const imagePath = userData.userImageUrl 
     ? userData.userImageUrl.replace(`${window.location.origin}/`, '') 
     : '';
@@ -47,13 +65,16 @@ export const updateUser = async (userData: UserType, password?: string) => {
   };
   const response = await axios.put(`${url}/Users/${userData.userId}`, updateData);
   
-  // Return with normalized URL
   return {
     ...response.data,
     userImageUrl: normalizeImageUrl(response.data.userImageUrl)
   };
 };
 
+/**
+ * אימות משתמש לפי טוקן
+ * מחזיר את פרטי המשתמש אם הטוקן תקין
+ */
 export const loginByToken = async (token: string) => {
   const response = await axios.get(`${url}/Login/${token}`);
   const userData = response.data;
