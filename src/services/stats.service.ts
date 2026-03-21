@@ -1,7 +1,12 @@
+/**
+ * שירות סטטיסטיקות
+ * מכיל פונקציות לקבלת נתונים סטטיסטיים של תלמידים ומורים
+ */
 import axios from './axios';
 
 const url = '/api';
 
+// ממשקים לסוגי הנתונים השונים
 export interface OverallStat {
   label: string;
   value: string;
@@ -64,92 +69,132 @@ export interface TeacherSubjectItem {
   trend: string;
 }
 
+// ==================== פונקציות סטטיסטיקה לתלמידים ====================
+
+/**
+ * קבלת סטטיסטיקה כללית של תלמיד
+ * @param userId - ID של התלמיד
+ */
 export const getStudentOverallStats = async (userId: number) => {
   try {
     const response = await axios.get(`${url}/Stats/student/${userId}/overall`);
     return response.data;
   } catch (error) {
-    console.error('Error fetching student overall stats:', error);
+    console.error('שגיאה בקבלת סטטיסטיקה כללית:', error);
     throw error;
   }
 };
 
+/**
+ * קבלת מבחנים אחרונים של תלמיד
+ * @param userId - ID של התלמיד
+ */
 export const getStudentRecentTests = async (userId: number) => {
   try {
     const response = await axios.get(`${url}/Stats/student/${userId}/recent-tests`);
     return response.data;
   } catch (error) {
-    console.error('Error fetching recent tests:', error);
+    console.error('שגיאה בקבלת מבחנים אחרונים:', error);
     throw error;
   }
 };
 
+/**
+ * קבלת הרגלי למידה של תלמיד
+ * @param userId - ID של התלמיד
+ */
 export const getStudentStudyHabits = async (userId: number) => {
   try {
     const response = await axios.get(`${url}/Stats/student/${userId}/study-habits`);
     return response.data;
   } catch (error) {
-    console.error('Error fetching study habits:', error);
+    console.error('שגיאה בקבלת הרגלי למידה:', error);
     throw error;
   }
 };
 
+/**
+ * קבלת הישגים של תלמיד
+ * @param userId - ID של התלמיד
+ */
 export const getStudentAchievements = async (userId: number) => {
   try {
     const response = await axios.get(`${url}/Stats/student/${userId}/achievements`);
     return response.data;
   } catch (error) {
-    console.error('Error fetching achievements:', error);
+    console.error('שגיאה בקבלת הישגים:', error);
     throw error;
   }
 };
 
+/**
+ * קבלת התקדמות שבועית של תלמיד
+ * @param userId - ID של התלמיד
+ */
 export const getStudentWeeklyProgress = async (userId: number) => {
   try {
     const response = await axios.get(`${url}/Stats/student/${userId}/weekly-progress`);
     return response.data;
   } catch (error) {
-    console.error('Error fetching weekly progress:', error);
+    console.error('שגיאה בקבלת התקדמות שבועית:', error);
     throw error;
   }
 };
 
+// ==================== פונקציות סטטיסטיקה למורים ====================
+
+/**
+ * קבלת סטטיסטיקה כללית של מורה
+ * @param userId - ID של המורה
+ */
 export const getTeacherOverallStats = async (userId: number) => {
   try {
     const response = await axios.get(`${url}/Stats/teacher/${userId}/overall`);
     return response.data;
   } catch (error) {
-    console.error('Error fetching teacher overall stats:', error);
+    console.error('שגיאה בקבלת סטטיסטיקה כללית:', error);
     throw error;
   }
 };
 
+/**
+ * קבלת התקדמות כיתות של מורה
+ * @param userId - ID של המורה
+ */
 export const getTeacherClassProgress = async (userId: number) => {
   try {
     const response = await axios.get(`${url}/Stats/teacher/${userId}/class-progress`);
     return response.data;
   } catch (error) {
-    console.error('Error fetching class progress:', error);
+    console.error('שגיאה בקבלת התקדמות כיתות:', error);
     throw error;
   }
 };
 
+/**
+ * קבלת נושאים של מורה
+ * @param userId - ID של המורה
+ */
 export const getTeacherSubjects = async (userId: number) => {
   try {
     const response = await axios.get(`${url}/Stats/teacher/${userId}/subjects`);
     return response.data;
   } catch (error) {
-    console.error('Error fetching teacher subjects:', error);
+    console.error('שגיאה בקבלת נושאים:', error);
     throw error;
   }
 };
 
+/**
+ * קבלת מבחנים אחרונים של מורה
+ * @param userId - ID של המורה
+ */
 export const getTeacherRecentTests = async (userId: number) => {
   try {
     const response = await axios.get(`${url}/Stats/teacher/${userId}/recent-tests`);
     return response.data;
   } catch (error) {
-    console.error('Error fetching teacher recent tests:', error);
+    console.error('שגיאה בקבלת מבחנים אחרונים:', error);
     throw error;
   }
 };

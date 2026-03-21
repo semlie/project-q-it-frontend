@@ -1,3 +1,7 @@
+/**
+ * דף התחברות למערכת
+ * מאפשר למשתמשים קיימים להתחבר עם אימייל וסיסמה
+ */
 import React, { useState } from 'react';
 import { BookOpen } from 'lucide-react';
 import { useNavigate } from 'react-router';
@@ -14,7 +18,9 @@ type LoginPageProps = {
   onSwitch?: () => void;
 };
 
+// פרמטרים: onSwitch - פונקציה לעבור לדף הרשמה (אופציונלי)
 export const LoginPage = ({ onSwitch }: LoginPageProps) => {
+  // מצב הטופס
   const [showPassword, setShowPassword] = useState(false);
   const [formData, setFormData] = useState({
     userEmail: '',
@@ -25,18 +31,21 @@ export const LoginPage = ({ onSwitch }: LoginPageProps) => {
   const navigate = useNavigate();
   const { login, error: authError, isAuthenticated } = useAuth();
 
+  // הפניה לדשבורד לאחר התחברות מוצלחת
   React.useEffect(() => {
     if (isAuthenticated) {
       navigate(`/${Paths.dashboard}`);
     }
   }, [isAuthenticated, navigate]);
 
+  // עדכון הודעת שגיאה מ-Redux
   React.useEffect(() => {
     if (authError) {
       setError(authError);
     }
   }, [authError]);
 
+  // טיפול בשליחת הטופס
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
@@ -51,12 +60,14 @@ export const LoginPage = ({ onSwitch }: LoginPageProps) => {
     }
   };
 
+  // עדכון שדות הטופס
   const handleInputChange = (field: 'userEmail' | 'userPassword', value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
   return (
     <div className="min-h-screen bg-white flex flex-col md:flex-row font-['Assistant',_sans-serif]" dir="rtl">
+      {/* פאנל ויזואלי שמאלי - מוצג רק במסכים בינוניים ומעלה */}
       <AuthVisualPanel
         logo={
           <div className="w-32 h-32 bg-white rounded-[3rem] shadow-2xl flex items-center justify-center p-4 transform hover:rotate-3 transition-transform duration-500">
@@ -81,23 +92,30 @@ export const LoginPage = ({ onSwitch }: LoginPageProps) => {
         }
         footer={<LoginVisualFooterStats />}
       />
+      
+      {/* טופס התחברות */}
       <div className="flex-1 flex flex-col p-6 md:p-12 lg:p-20 justify-center items-center bg-gray-50/50">
         <div className="w-full max-w-md space-y-10">
+          {/* לוגו למובייל */}
           <AuthMobileBrand
             iconContainerClassName="w-16 h-16 bg-white rounded-2xl shadow-lg flex items-center justify-center border border-gray-100"
             icon={<BookOpen size={32} className="text-cyan-600" />}
           />
+          
+          {/* כותרת */}
           <div className="space-y-2 text-center md:text-right">
             <h2 className="text-4xl font-extrabold text-gray-900 tracking-tight">כיף לראות אותך שוב!</h2>
             <p className="text-gray-500 text-lg">התחבר כדי להמשיך לתרגל</p>
           </div>
           
+          {/* הודעת שגיאה */}
           {error && (
             <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
               {error}
             </div>
           )}
           
+          {/* טופס */}
           <form onSubmit={handleSubmit} className="space-y-6">
             <LoginFormFields
               showPassword={showPassword}
